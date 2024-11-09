@@ -1,4 +1,4 @@
-# HOPP Hybrid Optimization Module
+# # Py-Microgrid: Hybrid Microgrid Simulation & Optimization Model
 Extension module for HOPP (Hybrid Optimization and Performance Platform) enabling hybrid microgrid system optimization with flexible load management and predictive battery dispatch.
 ## Features
 - **System Optimization**: Optimizes component sizes for:
@@ -16,10 +16,19 @@ Extension module for HOPP (Hybrid Optimization and Performance Platform) enablin
 ## Installation
 ```bash
 # Clone HOPP repository
-git clone [hopp-repository-url]
-cd hopp
+git clone [https://github.com/hahahhr/Py-Microgrid.git]
+Or download the ZIP file directly from the [repository page](https://github.com/hahahhr/Py-Microgrid).
+
 # Install requirements
-pip install -r requirements.txt
+
+This package requires HOPP-related dependencies. Please ensure you have the following installed:
+
+## Required Dependencies
+1. HOPP (Hybrid Optimization and Performance Platform)
+   ```bash
+   git clone https://github.com/NREL/HOPP.git
+   cd HOPP
+   pip install -e .
 ```
 ## Documentation
 For comprehensive documentation about HOPP (Hybrid Optimization and Performance Platform), please visit:
