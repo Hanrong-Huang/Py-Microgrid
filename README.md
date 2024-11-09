@@ -17,7 +17,7 @@ Extension module for HOPP (Hybrid Optimization and Performance Platform) enablin
 ```bash
 # Clone HOPP repository
 git clone [https://github.com/hahahhr/Py-Microgrid.git]
-Or download the ZIP file directly from the [repository page](https://github.com/hahahhr/Py-Microgrid).
+Or download the file directly from the [repository page](https://github.com/hahahhr/Py-Microgrid).
 
 # Install requirements
 
