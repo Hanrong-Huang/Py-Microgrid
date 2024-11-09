@@ -29,6 +29,8 @@ This package requires HOPP-related dependencies. Please ensure you have the foll
    git clone https://github.com/NREL/HOPP.git
    cd HOPP
    pip install -e .
+   
+   Or, download directly via pip: pip install HOPP
 ```
 ## Documentation
 For comprehensive documentation about HOPP (Hybrid Optimization and Performance Platform), please visit:

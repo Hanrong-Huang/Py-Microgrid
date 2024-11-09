@@ -1,0 +1,2 @@
+Architecture/Gen (kW),Cost/NPC ($),Cost/LCOE ($/kWh),Cost/Operating cost ($/yr),Cost/CAPEX ($),System/Ren Frac (%),System/Total Fuel (L/yr),Project Economics/IRR (%),Project Economics/Simple Payback (yr),Gen/Hours,Gen/Production (kWh),Gen/Fuel (L/yr),Annual Carbon Emissions (tonne/yr),Total Carbon Emissions (tonne),Total Load Served (kWh),Specific Carbon Emission_DG (kg/kWh),Gen/O&M Cost ($/yr),Gen/Fuel Cost ($/yr),Carbon Emission (kg/yr)
+19000,4.69E+08,0.460197,3.55E+07,9500000,0,2.11E+07,,,8760,7.89E+07,2.11E+07,55240,1380995,1969558248,0.701,4993200,2.53E+07,"55,115,033"
