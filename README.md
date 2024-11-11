@@ -1,5 +1,5 @@
 # # Py-Microgrid: Hybrid Microgrid Simulation & Optimization Model
-Extension module for HOPP (Hybrid Optimization and Performance Platform) enabling hybrid microgrid system optimization with flexible load management and predictive battery dispatch.
+Extension module for HOPP (Hybrid Optimization and Performance Platform) enabling hybrid microgrid system simulation & optimization with flexible load management and predictive battery dispatch.
 ## Features
 - **System Optimization**: Optimizes component sizes for:
   - PV systems
