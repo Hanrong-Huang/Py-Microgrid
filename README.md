@@ -202,7 +202,6 @@ Key steps:
 - Enable/disable flexible load management as needed
 - Results include system sizing, costs, and performance metrics
 ```
-
 ## API Reference
 
 ### NREL Developer API
