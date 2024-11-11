@@ -180,7 +180,7 @@ technologies:
 
 Complete example available in:
 ```
-examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
+Py-Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
 ```
 
 Key steps:
