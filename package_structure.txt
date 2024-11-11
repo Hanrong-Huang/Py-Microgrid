@@ -37,7 +37,7 @@ hopp/
 │   └── ...
 └── examples/
     └── parallel_simulations/
-        └── scripts_modularised/
+        └── Py-Microgrid_example/
             └── simulation_chunk_0.ipynb      # Example implementation
 
 Key Components and Changes:
