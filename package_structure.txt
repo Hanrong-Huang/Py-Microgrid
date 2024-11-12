@@ -1,4 +1,4 @@
-# Modified HOPP Structure
+# Py-Microgrid Structure 
 
 ```
 hopp/
