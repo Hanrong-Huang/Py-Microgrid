@@ -3,7 +3,7 @@
 Extension module for HOPP (Hybrid Optimisation and Performance Platform) enabling hybrid microgrid system simulation & optimisation with flexible load management and predictive battery dispatch.
 
 ## Features
-- **System Optimization**: Optimizes component sizes for:
+- **System Optimisation**: Optimises component sizes for:
   - PV systems
   - Wind turbines
   - Battery storage
