@@ -83,7 +83,7 @@ Key Components and Changes:
    - Integrates with flexible load management
 
 8. Example Implementation:
-   - examples/parallel_simulations/scripts_modularised/simulation_chunk_0.ipynb
+   - examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
    - Demonstrates full system optimization
    - Shows integration of all components
    - Users can choose a dispatch strategy 
