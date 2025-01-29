@@ -20,7 +20,7 @@ Extension package based on HOPP (Hybrid Optimisation and Performance Platform) e
 
 ```bash
 # Clone Py-Microgrid repository
-git clone https://github.com/hahahhr/Py-Microgrid.git
+git clone https://github.com/Hanrong-Huang/Py-Microgrid.git
 ```
 Or download the file directly from the [repository page](https://github.com/hahahhr/Py-Microgrid).
 
