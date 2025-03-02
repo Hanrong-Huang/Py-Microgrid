@@ -12,7 +12,7 @@ Py-Microgrid/
 │   ├── optimization/
 │   │   ├── __init__.py
 │   │   ├── candidate.py
-│   │   ├── load_analyzer.py                 # New: Flexible load management (10% flexibility)
+│   │   ├── load_analyzer.py                 # New: Flexible load management (20% flexibility)
 │   │   ├── system_optimizer.py              # New: Hybrid system optimization
 │   │   └── ...
 │   └── ...
