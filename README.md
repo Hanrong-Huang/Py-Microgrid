@@ -62,9 +62,12 @@ The documentation includes detailed information about:
 
 ## Quick Start
 
-The quick start example is at Py_Microgrid/quick_start_example.ipynb. 
+The quick start example is at
+```
+Py_Microgrid/quick_start_example.ipynb. 
 ```
 A complete example that can simulate multiple locations can be found at:
+```
 Py_Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
 ```
 
