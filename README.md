@@ -62,7 +62,7 @@ The documentation includes detailed information about:
 
 ## Quick Start
 
-The quick start example is at
+The quick start example is at (API key prefilled)
 ```
 Py_Microgrid/quick_start_example.ipynb. 
 ```
@@ -71,6 +71,7 @@ A complete example that can simulate multiple locations can be found at:
 Py_Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
 ```
 
+Below is a quick start example with your own API key
 ```python
 # Required imports
 from Py_Microgrid.utilities import ConfigManager
