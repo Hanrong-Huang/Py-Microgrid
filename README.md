@@ -62,6 +62,12 @@ The documentation includes detailed information about:
 
 ## Quick Start
 
+The quick start example is at Py_Microgrid/quick_start_example.ipynb. 
+```
+A complete example that can simulate multiple locations can be found at:
+Py_Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
+```
+
 ```python
 # Required imports
 from Py_Microgrid.utilities import ConfigManager
@@ -176,11 +182,16 @@ technologies:
     interconnect_kw: 20000
 ```
 
+> **Important:** You must update the `solar_resource_file`, `wind_resource_file`, and `grid_resource_file` in your YAML file to point to the correct local paths on your system. For a detailed example, refer to:
+> ```
+> Py_Microgrid\examples\parallel_simulations\input_yaml\input_file_chunk_0.yaml
+> ```
+
 ## Example Usage
 
 Complete example available in:
 ```
-Py-Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
+Py_Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
 ```
 
 Key steps:
@@ -201,7 +212,7 @@ Key steps:
 - Adjust bounds and initial conditions based on your system requirements
 - Enable/disable flexible load management as needed
 - Results include system sizing, costs, and performance metrics
-```
+
 ## API Reference
 
 ### NREL Developer API
