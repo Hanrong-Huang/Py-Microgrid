@@ -7,38 +7,38 @@ Py-Microgrid/
 │   │   └── bos/
 │   │       ├── __init__.py
 │   │       ├── cost_calculator.py
-│   │       ├── economic_calculator.py        # New: LCOE and financial calculations
+│   │       ├── economic_calculator.py       # New: LCOE and financial calculations
 │   │       └── ...
 │   ├── optimization/
 │   │   ├── __init__.py
 │   │   ├── candidate.py
-│   │   ├── load_analyzer.py                 # New: Flexible load management (up to 20%)
-│   │   ├── system_optimizer.py              # New: Hybrid system optimization
+│   │   ├── load_analyzer.py                # New: Flexible load management (up to 20%)
+│   │   ├── system_optimizer.py             # New: Hybrid system optimization and CO2 emissions calculations
 │   │   └── ...
 │   └── ...
 ├── utilities/
 │   ├── __init__.py
 │   ├── utilities.py
-│   ├── config_manager.py                    # New: YAML configuration management
+│   ├── config_manager.py                   # New: YAML configuration management
 │   └── ...
 ├── simulation/
 │   ├── technologies/
-│   │   ├── grid.py                          # Modified: Enhanced genset modeling
+│   │   ├── grid.py                         # Modified: Enhanced grid/genset modeling
 │   │   └── dispatch/
 │   │       └── power_storage/
 │   │           ├── predictive_demand_response_battery_dispatch.py  # New: Predictive battery dispatch
 │   │           └── ...
 │   ├── resource_files/
 │   │   ├── __init__.py
-│   │   ├── solar/                           # Directory for solar data
+│   │   ├── solar/                          # Directory for solar data
 │   │   ├── wind/                           # Directory for wind data
-│   │   ├── resource_data_manager.py         # New: Resource data downloading
+│   │   ├── resource_data_manager.py        # New: Resource data downloading
 │   │   └── ...
 │   └── ...
 └── examples/
     └── parallel_simulations/
         └── Py-Microgrid_example/
-            └── simulation_chunk_0.ipynb      # Example implementation
+            └── simulation_chunk_0.ipynb    # Example implementation with emissions reporting
 
 Key Components and Changes:
 
@@ -63,6 +63,7 @@ Key Components and Changes:
    - tools/optimization/system_optimizer.py
    - Optimizes component sizes (PV, wind, battery, genset) to minimize LCOE
    - Integrates with simulation and economic analysis
+   - Calculates and tracks CO2 emissions from genset operation
    - Handles multi-parameter optimization using Nelder-Mead algorithm
 
 5. Resource Management:
@@ -82,10 +83,18 @@ Key Components and Changes:
    - Optimizes battery charging/discharging
    - Integrates with flexible load management
 
-8. Example Implementation:
+8. Emissions Calculation:
+   - tools/optimization/system_optimizer.py
+   - Calculates CO2 emissions from genset operation
+   - Tracks emissions based on fuel consumption
+   - Integrates emissions into overall system performance metrics
+   - Reports total CO2 emissions in results
+
+9. Example Implementation:
    - examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
    - Demonstrates full system optimization
    - Shows integration of all components
+   - Includes emissions reporting in results
    - Users can choose a dispatch strategy 
    - Dispatch options are: 'predictive_demand_response', 'heuristic_load_following', 'heuristic', 'one_cycle_heuristic', 'simple', 'non_convex_LV', 'convex_LV'
    - Users can enable/disable flexible load
@@ -96,7 +105,7 @@ Key Features:
 - Enhanced genset modeling and cost calculations
 - Integrated optimization of all system components
 - Resource data management with caching
-- Comprehensive economic analysis
+- Comprehensive economic analysis with CO2 emissions tracking
 - Safe configuration handling
 
 Each component maintains compatibility with existing HOPP functionality while adding new capabilities for hybrid system optimization and flexible demand management.
@@ -104,8 +113,9 @@ Each component maintains compatibility with existing HOPP functionality while ad
 
 This structure shows all the major modifications and additions to HOPP, including:
 1. The grid.py modifications for better genset modeling
-2. The new predictive demand response battery dispatch
-3. The flexible load capability in the load analyzer
-4. How these components interact with each other
+2. The CO2 emissions calculations in system_optimizer.py
+3. The new predictive demand response battery dispatch
+4. The flexible load capability in the load analyzer
+5. How these components interact with each other
 
 All components follow HOPP's architectural patterns while introducing new functionality for hybrid system optimization and flexible demand management.
