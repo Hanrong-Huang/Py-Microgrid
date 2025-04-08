@@ -3,18 +3,11 @@
 Extension package based on HOPP (Hybrid Optimisation and Performance Platform) enabling hybrid microgrid system simulation & optimisation with flexible load management and predictive battery dispatch.
 
 ## Features
-- **System Optimisation**: Optimises component sizes for:
-  - PV systems
-  - Wind turbines
-  - Battery storage
-  - Genset capacity
+- **System Optimisation**: Optimises component sizes for PV, wind, battery storage, and genset
 - **Flexible Load Management**: Implements up to 20% load reduction capability
 - **Predictive Battery Dispatch**: Enhanced battery management with demand response
-- **Economic Analysis**: Comprehensive financial evaluation including:
-  - LCOE calculation
-  - Net Present Cost (NPC)
-  - CO2 emissions tracking
-  - Component lifetime costs
+- **Economic Analysis**: LCOE, NPC, CO2 emissions, and lifetime costs
+- **Multi-Location Processing**: Batch analysis for multiple sites simultaneously
 
 ## Installation
 
@@ -51,14 +44,6 @@ Or download the file directly from the [repository page](https://github.com/haha
 For comprehensive documentation about HOPP (Hybrid Optimization and Performance Platform), please visit:
 - Official Documentation: https://hopp.readthedocs.io/en/latest/
 - Original HOPP Repository: https://github.com/NREL/HOPP
-
-The documentation includes detailed information about:
-- Core concepts and methodology
-- Component models and algorithms
-- API reference and examples
-- Installation and setup guides
-- Contributing guidelines
-- Tutorials and use cases
 
 ## Quick Start
 
@@ -182,36 +167,53 @@ technologies:
     interconnect_kw: 20000
 ```
 
-> **Important:** You must update the `solar_resource_file`, `wind_resource_file`, and `grid_resource_file` in your YAML file to point to the correct local paths on your system. For a detailed example, refer to:
-> ```
-> Py_Microgrid\examples\parallel_simulations\input_yaml\input_file_chunk_0.yaml
-> ```
+> **Important:** Update the resource files in your YAML to point to the correct local paths on your system.
 
-## Example Usage
+## Multi-Location Batch Processing
 
-Complete example available in:
+Py-Microgrid supports the optimization of multiple locations in a single run, demonstrated in the example notebook:
 ```
 Py_Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
 ```
 
-Key steps:
-1. Set up configuration
-2. Initialize optimizers
-3. Define system bounds
-4. Run optimization
-5. Analyze results
+### How It Works
 
-### Prerequisites
-1. HOPP package installed
-2. NREL API key (get from https://developer.nrel.gov/)
-3. Base YAML configuration file
-4. Python packages: numpy, pandas, scipy
+1. **Location Data**: Provide a CSV file with location information:
+   ```python
+   # Load sites from CSV file with coordinates
+   locations = pd.read_csv("locations.csv")  # Contains latitude, longitude, and site IDs
+   ```
 
-### Notes
-- The example downloads solar data from NREL and wind data from NASA POWER
-- Adjust bounds and initial conditions based on your system requirements
-- Enable/disable flexible load management as needed
-- Results include system sizing, costs, and performance metrics
+2. **Batch Processing**: Process each location sequentially:
+   ```python
+   results = []
+   for _, row in locations.iterrows():
+       result = optimizer.process_location(
+           latitude=row['DEPOSIT_LATITUDE'],
+           longitude=row['DEPOSIT_LONGITUDE'],
+           location_id=row['DEPOSIT_UID']
+       )
+       if result:
+           results.append(result)
+   ```
+
+3. **Results Analysis**: Generate analytics across all sites:
+   ```python
+   # Save consolidated results
+   results_df = pd.DataFrame(results)
+   results_df.to_csv("optimization_results.csv", index=False)
+   
+   # Generate summary statistics
+   print(f"Total locations processed: {len(results)}")
+   print(f"Average LCOE: ${results_df['System LCOE ($/kWh)'].mean():.4f}/kWh")
+   print(f"Best LCOE: ${results_df['System LCOE ($/kWh)'].min():.4f}/kWh")
+   ```
+
+### Applications
+- Regional microgrid planning
+- Site comparison and selection
+- Portfolio optimization
+- Geospatial energy analysis
 
 ## API Reference
 
@@ -229,21 +231,9 @@ set_developer_nrel_gov_key('YOUR-NREL-API-KEY')
 For accessing NASA POWER MERRA-2 wind resource data:
 - No API key required
 - User registration through email is sufficient
-- Usage limits apply as per NASA POWER terms of service
 
-## Resource Data
+## Resource Data Management
 
-Automatically downloads and manages:
-- Solar resource data (NREL Himawari API)
-- Wind resource data (NASA POWER MERRA-2 API)
-
-Resource data management features:
-- Automatic file handling and caching
-- Coordinate-based data retrieval
-- Multiple year support
-- 60-minute resolution data
-
-Requires API keys for data access:
 ```python
 from Py_Microgrid.utilities.keys import set_developer_nrel_gov_key
 set_developer_nrel_gov_key('YOUR-API-KEY')
@@ -272,11 +262,6 @@ wind_file = manager.download_wind_data(
 - Automatic adjustment during peak demand
 - Optimization of demand response
 
-### Predictive Battery Dispatch
-- Forward-looking dispatch strategy
-- Integration with flexible load management
-- Optimized charging/discharging cycles
-
 ### Enhanced Genset Modeling
 - Improved operational characteristics
 - Detailed cost modeling
@@ -286,11 +271,9 @@ wind_file = manager.download_wind_data(
 
 The optimization provides comprehensive results including:
 - Optimal component sizes
-- System LCOE
-- Total generation metrics
+- System LCOE and NPC
 - CO2 emissions
 - Performance metrics
-- Economic indicators
 
 ## License
 
