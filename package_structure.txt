@@ -1,7 +1,7 @@
 # Py-Microgrid Structure 
 
 ```
-Py-Microgrid/
+py-microgrid/
 ├── tools/
 │   ├── analysis/
 │   │   └── bos/
@@ -37,7 +37,7 @@ Py-Microgrid/
 │   └── ...
 └── examples/
     └── parallel_simulations/
-        └── Py-Microgrid_example/
+        └── py-microgrid_example/
             └── simulation_chunk_0.ipynb    # Example implementation with emissions reporting
 
 Key Components and Changes:
@@ -91,7 +91,7 @@ Key Components and Changes:
    - Reports total CO2 emissions in results
 
 9. Example Implementation:
-   - examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
+   - examples/parallel_simulations/py-microgrid_example/simulation_chunk_0.ipynb
    - Demonstrates full system optimization
    - Shows integration of all components
    - Includes emissions reporting in results
