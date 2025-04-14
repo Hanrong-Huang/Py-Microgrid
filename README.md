@@ -49,17 +49,17 @@ For comprehensive documentation about HOPP (Hybrid Optimization and Performance 
 
 The quick start example is at (API key prefilled)
 ```
-Py_Microgrid/quick_start_example.ipynb. 
+py_microgrid/quick_start_example.ipynb. 
 ```
 
 Below is a quick start example with your own API key
 ```python
 # Required imports
-from Py_Microgrid.utilities import ConfigManager
-from Py_Microgrid.utilities.keys import set_developer_nrel_gov_key
-from Py_Microgrid.tools.optimization import SystemOptimizer, LoadAnalyzer
-from Py_Microgrid.tools.analysis.bos import EconomicCalculator
-from Py_Microgrid.simulation.resource_files import ResourceDataManager
+from py_microgrid.utilities import ConfigManager
+from py_microgrid.utilities.keys import set_developer_nrel_gov_key
+from py_microgrid.tools.optimization import SystemOptimizer, LoadAnalyzer
+from py_microgrid.tools.analysis.bos import EconomicCalculator
+from py_microgrid.simulation.resource_files import ResourceDataManager
 
 # Set your NREL API key (required for downloading solar data)
 set_developer_nrel_gov_key('YOUR-NREL-API-KEY')
@@ -173,7 +173,7 @@ technologies:
 
 Py-Microgrid supports the optimization of multiple locations in a single run, demonstrated in the example notebook:
 ```
-Py_Microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
+py_microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
 ```
 
 ### How It Works
@@ -223,7 +223,7 @@ For accessing NREL Himawari solar resource data:
 2. Get your API key from the account dashboard
 3. Set your API key:
 ```python
-from Py_Microgrid.utilities.keys import set_developer_nrel_gov_key
+from py_microgrid.utilities.keys import set_developer_nrel_gov_key
 set_developer_nrel_gov_key('YOUR-NREL-API-KEY')
 ```
 
@@ -235,11 +235,11 @@ For accessing NASA POWER MERRA-2 wind resource data:
 ## Resource Data Management
 
 ```python
-from Py_Microgrid.utilities.keys import set_developer_nrel_gov_key
+from py_microgrid.utilities.keys import set_developer_nrel_gov_key
 set_developer_nrel_gov_key('YOUR-API-KEY')
 
 # Example usage of ResourceDataManager
-from Py_Microgrid.simulation.resource_files import ResourceDataManager
+from py_microgrid.simulation.resource_files import ResourceDataManager
 
 manager = ResourceDataManager(api_key='YOUR-API-KEY', email='your.email@example.com')
 
