@@ -1,1 +1,0 @@
-# Microgrid simulation module
