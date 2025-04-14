@@ -1,7 +1,7 @@
 # Py-Microgrid Structure 
 
 ```
-py-microgrid/
+py_microgrid/
 ├── tools/
 │   ├── analysis/
 │   │   └── bos/
