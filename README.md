@@ -173,7 +173,7 @@ technologies:
 
 Py-Microgrid supports the optimization of multiple locations in a single run, demonstrated in the example notebook:
 ```
-py_microgrid/examples/parallel_simulations/Py-Microgrid_example/simulation_chunk_0.ipynb
+py_microgrid/examples/parallel_simulations/py_microgrid_example/simulation_chunk_0.ipynb
 ```
 
 ### How It Works
