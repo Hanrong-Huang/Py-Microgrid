@@ -37,7 +37,7 @@ py_microgrid/
 │   └── ...
 └── examples/
     └── parallel_simulations/
-        └── py-microgrid_example/
+        └── py_microgrid_example/
             └── simulation_chunk_0.ipynb    # Example implementation with emissions reporting
 
 Key Components and Changes:
