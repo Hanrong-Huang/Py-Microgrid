@@ -7,7 +7,7 @@ py_microgrid/
 │   │   └── bos/
 │   │       ├── __init__.py
 │   │       ├── cost_calculator.py
-│   │       ├── economic_calculator.py       # New: LCOE and financial calculations
+│   │       ├── economic_calculator.py      # New: LCOE and financial calculations
 │   │       └── ...
 │   ├── optimization/
 │   │   ├── __init__.py
