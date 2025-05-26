@@ -1,4 +1,5 @@
-# Py-Microgrid Structure 
+# Py-Microgrid Structure
+------------------------
 py_microgrid/
 ├── tools/
 │   ├── analysis/
