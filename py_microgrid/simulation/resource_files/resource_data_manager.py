@@ -91,7 +91,7 @@ class ResourceDataManager:
                 "mailing_list": "true",
                 "reason": "research",
                 "api_key": self.api_key,
-                "attributes": "dni,dhi,ghi"
+                "attributes": "dni,dhi,ghi,dew_point,air_temperature,surface_pressure,wind_direction,wind_speed,surface_albedo"
             }
             
             response = requests.get(solar_base_url, params=solar_params)
