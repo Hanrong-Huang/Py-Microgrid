@@ -8,12 +8,15 @@ from py_microgrid.simulation.technologies.dispatch.dispatch import Dispatch
 
 
 class GridDispatch(Dispatch):
+    """
+    Grid dispatch class for true electrical grid connection.
+    
+    This class handles the optimization of grid import/export decisions
+    based on time-varying pricing and grid constraints.
+    """
     grid_obj: Union[pyomo.Expression, float]
     _model: pyomo.ConcreteModel
     _blocks: pyomo.Block
-    """
-
-    """
 
     def __init__(
         self,
@@ -33,6 +36,12 @@ class GridDispatch(Dispatch):
         )
 
     def dispatch_block_rule(self, grid):
+        """
+        Define the dispatch block rule for grid connection.
+        
+        This includes parameters, variables, constraints, and ports
+        for grid import/export optimization.
+        """
         # Parameters
         self._create_grid_parameters(grid)
         # Variables
@@ -43,327 +52,221 @@ class GridDispatch(Dispatch):
         self._create_grid_ports(grid)
 
     def max_gross_profit_objective(self, hybrid_blocks):
+        """
+        Objective function for maximizing gross profit from grid interaction.
+        
+        This considers both the revenue from selling to grid and costs of purchasing from grid.
+        """
         self.obj = pyomo.Expression(
             expr=sum(
                 hybrid_blocks[t].time_weighting_factor
                 * self.blocks[t].time_duration
-                * self.blocks[t].electricity_sell_price
-                * hybrid_blocks[t].electricity_sold
-                - (1 / hybrid_blocks[t].time_weighting_factor)
-                * self.blocks[t].time_duration
-                * self.blocks[t].electricity_purchase_price
-                * hybrid_blocks[t].electricity_purchased
-                - self.blocks[t].epsilon * self.blocks[t].is_generating
+                * (self.blocks[t].electricity_sell_price * self.blocks[t].electricity_sold
+                   - self.blocks[t].electricity_purchase_price * self.blocks[t].electricity_purchased)
                 for t in hybrid_blocks.index_set()
             )
         )
 
     def min_operating_cost_objective(self, hybrid_blocks):
-        self.obj = sum(
-            hybrid_blocks[t].time_weighting_factor
-            * self.blocks[t].time_duration
-            * self.blocks[t].electricity_sell_price
-            * (
-                self.blocks[t].generation_transmission_limit
-                - hybrid_blocks[t].electricity_sold
-            )
-            + (
+        """
+        Objective function for minimizing operating cost from grid interaction.
+        
+        This focuses on minimizing the net cost of grid electricity.
+        """
+        self.obj = pyomo.Expression(
+            expr=sum(
                 hybrid_blocks[t].time_weighting_factor
                 * self.blocks[t].time_duration
-                * self.blocks[t].electricity_purchase_price
-                * hybrid_blocks[t].electricity_purchased
+                * (self.blocks[t].electricity_purchase_price * self.blocks[t].electricity_purchased
+                   - self.blocks[t].electricity_sell_price * self.blocks[t].electricity_sold)
+                for t in hybrid_blocks.index_set()
             )
-            + (self.blocks[t].epsilon * self.blocks[t].is_generating)
-            for t in hybrid_blocks.index_set()
         )
 
-    def _create_variables(self, hybrid):
-        hybrid.system_generation = pyomo.Var(
-            doc="System generation [MW]",
-            domain=pyomo.NonNegativeReals,
-            units=u.MW,
-        )
-        hybrid.system_load = pyomo.Var(
-            doc="System load [MW]",
-            domain=pyomo.NonNegativeReals,
-            units=u.MW,
-        )
-        hybrid.electricity_sold = pyomo.Var(
-            doc="Electricity sold [MW]",
-            domain=pyomo.NonNegativeReals,
-            units=u.MW,
-        )
-        hybrid.electricity_purchased = pyomo.Var(
-            doc="Electricity purchased [MW]",
-            domain=pyomo.NonNegativeReals,
-            units=u.MW,
-        )
-
-        return 0, 0
-
-    def _create_port(self, hybrid):
-        hybrid.grid_port = Port(
-            initialize={
-                "system_generation": hybrid.system_generation,
-                "system_load": hybrid.system_load,
-                "electricity_sold": hybrid.electricity_sold,
-                "electricity_purchased": hybrid.electricity_purchased,
-            }
-        )
-        return hybrid.grid_port
-
-    def _create_constraints(self, hybrid, t):
-        hybrid.generation_total = pyomo.Constraint(
-            doc="hybrid system generation total",
-            rule=hybrid.system_generation == sum(self.power_source_gen_vars[t]),
-        )
-
-    @staticmethod
-    def _create_grid_parameters(grid):
-        ##################################
-        # Parameters                     #
-        ##################################
+    def _create_grid_parameters(self, grid):
+        """
+        Create parameters for grid dispatch optimization.
+        """
+        # Time-related parameters
         grid.epsilon = pyomo.Param(
-            doc="A small value used in objective for binary logic",
-            default=1e-3,
-            within=pyomo.NonNegativeReals,
-            mutable=True,
-            units=u.USD,
+            initialize=1e-3, 
+            doc="Small epsilon value for numerical stability"
         )
         grid.time_duration = pyomo.Param(
-            doc="Time step [hour]",
-            default=1.0,
-            within=pyomo.NonNegativeReals,
-            mutable=True,
-            units=u.hr,
+            initialize=1.0,
+            doc="Duration of time step (hours)"
         )
+        
+        # Pricing parameters
         grid.electricity_sell_price = pyomo.Param(
-            doc="Electricity sell price [$/MWh]",
-            default=0.0,
-            within=pyomo.Reals,
-            mutable=True,
-            units=u.USD / u.MWh,
+            initialize=0.0,
+            doc="Price for selling electricity to grid ($/kWh)"
         )
         grid.electricity_purchase_price = pyomo.Param(
-            doc="Electricity purchase price [$/MWh]",
-            default=0.0,
-            within=pyomo.Reals,
-            mutable=True,
-            units=u.USD / u.MWh,
+            initialize=0.0,
+            doc="Price for purchasing electricity from grid ($/kWh)"
         )
-        grid.generation_transmission_limit = pyomo.Param(
-            doc="Grid transmission limit for generation [MW]",
-            default=1000.0,
-            within=pyomo.NonNegativeReals,
-            mutable=True,
-            units=u.MW,
+        
+        # Grid connection limits
+        grid.import_limit = pyomo.Param(
+            initialize=0.0,
+            doc="Maximum power import from grid (kW)"
         )
-        grid.load_transmission_limit = pyomo.Param(
-            doc="Grid transmission limit for load [MW]",
-            default=1000.0,
-            within=pyomo.NonNegativeReals,
-            mutable=True,
-            units=u.MW,
+        grid.export_limit = pyomo.Param(
+            initialize=0.0,
+            doc="Maximum power export to grid (kW)"
         )
-
-    @staticmethod
-    def _create_grid_variables(grid):
-        ##################################
-        # Variables                      #
-        ##################################
-        grid.system_generation = pyomo.Var(
-            doc="System generation [MW]", domain=pyomo.NonNegativeReals, units=u.MW
-        )
-        grid.system_load = pyomo.Var(
-            doc="System load [MW]", domain=pyomo.NonNegativeReals, units=u.MW
-        )
-        grid.electricity_sold = pyomo.Var(
-            doc="Electricity sold to the grid [MW]",
-            domain=pyomo.NonNegativeReals,
-            bounds=(0, grid.generation_transmission_limit),
-            units=u.MW,
-        )
-        grid.electricity_purchased = pyomo.Var(
-            doc="Electricity purchased from the grid [MW]",
-            domain=pyomo.NonNegativeReals,
-            bounds=(0, grid.load_transmission_limit),
-            units=u.MW,
-        )
-        grid.is_generating = pyomo.Var(
-            doc="System is generating power", domain=pyomo.Binary, units=u.dimensionless
+        
+        # Grid availability
+        grid.grid_available = pyomo.Param(
+            initialize=1.0,
+            doc="Grid availability factor (0-1)"
         )
 
-    @staticmethod
-    def _create_grid_constraints(grid):
-        ##################################
-        # Constraints                    #
-        ##################################
-        grid.balance = pyomo.Constraint(
-            doc="Transmission energy balance",
-            expr=(
-                grid.electricity_sold - grid.electricity_purchased
-                == grid.system_generation - grid.system_load
-            ),
+    def _create_grid_variables(self, grid):
+        """
+        Create variables for grid dispatch optimization.
+        """
+        # Power flows
+        grid.power_imported = pyomo.Var(
+            bounds=(0, None),
+            doc="Power imported from grid (kW)"
         )
-        grid.sales_transmission_limit = pyomo.Constraint(
-            doc="Transmission limit on electricity sales",
-            expr=grid.electricity_sold
-            <= grid.generation_transmission_limit * grid.is_generating,
+        grid.power_exported = pyomo.Var(
+            bounds=(0, None),
+            doc="Power exported to grid (kW)"
         )
-        grid.purchases_transmission_limit = pyomo.Constraint(
-            doc="Transmission limit on electricity purchases",
-            expr=(
-                grid.electricity_purchased
-                <= grid.load_transmission_limit * (1 - grid.is_generating)
-            ),
+        
+        # Net grid power (positive = import, negative = export)
+        grid.net_grid_power = pyomo.Var(
+            doc="Net grid power - positive for import, negative for export (kW)"
+        )
+        
+        # Binary variable to prevent simultaneous import/export
+        grid.importing = pyomo.Var(
+            domain=pyomo.Binary,
+            doc="Binary variable: 1 if importing, 0 if exporting"
+        )
+        
+        # Grid connection status
+        grid.grid_connected = pyomo.Var(
+            domain=pyomo.Binary,
+            initialize=1,
+            doc="Binary variable: 1 if grid connected, 0 if off-grid"
         )
 
-    @staticmethod
-    def _create_grid_ports(grid):
-        ##################################
-        # Ports                          #
-        ##################################
+    def _create_grid_constraints(self, grid):
+        """
+        Create constraints for grid dispatch optimization.
+        """
+        # Net power balance constraint
+        grid.net_power_balance = pyomo.Constraint(
+            expr=grid.net_grid_power == grid.power_imported - grid.power_exported,
+            doc="Net grid power equals import minus export"
+        )
+        
+        # Import limit constraint
+        grid.import_limit_constraint = pyomo.Constraint(
+            expr=grid.power_imported <= grid.import_limit * grid.importing * grid.grid_connected * grid.grid_available,
+            doc="Power import cannot exceed import limit"
+        )
+        
+        # Export limit constraint
+        grid.export_limit_constraint = pyomo.Constraint(
+            expr=grid.power_exported <= grid.export_limit * (1 - grid.importing) * grid.grid_connected * grid.grid_available,
+            doc="Power export cannot exceed export limit"
+        )
+        
+        # Prevent simultaneous import and export
+        grid.no_simultaneous_import_export = pyomo.Constraint(
+            expr=grid.power_imported * grid.power_exported <= grid.epsilon,
+            doc="Cannot import and export simultaneously"
+        )
+        
+        # Grid connection constraints
+        grid.grid_connection_import = pyomo.Constraint(
+            expr=grid.power_imported <= grid.import_limit * grid.grid_connected,
+            doc="No import when grid disconnected"
+        )
+        
+        grid.grid_connection_export = pyomo.Constraint(
+            expr=grid.power_exported <= grid.export_limit * grid.grid_connected,
+            doc="No export when grid disconnected"
+        )
+
+    def _create_grid_ports(self, grid):
+        """
+        Create ports for grid dispatch optimization.
+        
+        Ports allow the grid to interface with the hybrid system.
+        """
         grid.port = Port()
-        grid.port.add(grid.system_generation)
-        grid.port.add(grid.system_load)
-        grid.port.add(grid.electricity_sold)
-        grid.port.add(grid.electricity_purchased)
+        grid.port.add(grid.net_grid_power, "net_grid_power")
+        grid.port.add(grid.power_imported, "power_imported")
+        grid.port.add(grid.power_exported, "power_exported")
+        grid.port.add(grid.grid_connected, "grid_connected")
 
-    def initialize_parameters(self):
-        grid_limit_kw = self._system_model.value("grid_interconnection_limit_kwac")
-        self.generation_transmission_limit = [grid_limit_kw / 1e3] * len(
-            self.blocks.index_set()
-        )
-        self.load_transmission_limit = [grid_limit_kw / 1e3] * len(
-            self.blocks.index_set()
-        )
+    def update_dispatch_parameters(self, grid_block, grid_config, time_step):
+        """
+        Update dispatch parameters for a specific time step.
+        
+        Args:
+            grid_block: Pyomo block for this time step
+            grid_config: Grid configuration object
+            time_step: Current time step index
+        """
+        # Update pricing based on dispatch factors
+        if hasattr(grid_config, 'import_prices') and len(grid_config.import_prices) > time_step:
+            grid_block.electricity_purchase_price.set_value(grid_config.import_prices[time_step])
+        
+        if hasattr(grid_config, 'export_prices') and len(grid_config.export_prices) > time_step:
+            grid_block.electricity_sell_price.set_value(grid_config.export_prices[time_step])
+        
+        # Update limits
+        if hasattr(grid_config, 'import_limit_kw'):
+            grid_block.import_limit.set_value(grid_config.import_limit_kw)
+        
+        if hasattr(grid_config, 'export_limit_kw'):
+            grid_block.export_limit.set_value(grid_config.export_limit_kw)
+        
+        # Update availability
+        if hasattr(grid_config, 'enabled'):
+            grid_block.grid_available.set_value(1.0 if grid_config.enabled else 0.0)
+            grid_block.grid_connected.set_value(1 if grid_config.enabled else 0)
 
-    def update_time_series_parameters(self, start_time: int):
-        n_horizon = len(self.blocks.index_set())
-        dispatch_factors = self._financial_model.value("dispatch_factors_ts")
-        ppa_price = self._financial_model.value("ppa_price_input")[0]
-        if start_time + n_horizon > len(dispatch_factors):
-            prices = list(dispatch_factors[start_time:])
-            prices.extend(list(dispatch_factors[0 : n_horizon - len(prices)]))
-        else:
-            prices = dispatch_factors[start_time : start_time + n_horizon]
-        # NOTE: Assuming the same prices
-        self.electricity_sell_price = [
-            norm_price * ppa_price * 1e3 for norm_price in prices
-        ]
-        self.electricity_purchase_price = [
-            norm_price * ppa_price * 1e3 for norm_price in prices
-        ]
-
-    @property
-    def electricity_sell_price(self) -> list:
-        return [
-            self.blocks[t].electricity_sell_price.value for t in self.blocks.index_set()
-        ]
-
-    @electricity_sell_price.setter
-    def electricity_sell_price(self, price_per_mwh: list):
-        if len(price_per_mwh) == len(self.blocks):
-            for t, price in zip(self.blocks, price_per_mwh):
-                self.blocks[t].electricity_sell_price.set_value(
-                    round(price, self.round_digits)
-                )
-        else:
-            raise ValueError(
-                "'price_per_mwh' list must be the same length as time horizon"
-            )
-
-    @property
-    def electricity_purchase_price(self) -> list:
-        return [
-            self.blocks[t].electricity_purchase_price.value
-            for t in self.blocks.index_set()
-        ]
-
-    @electricity_purchase_price.setter
-    def electricity_purchase_price(self, price_per_mwh: list):
-        if len(price_per_mwh) == len(self.blocks):
-            for t, price in zip(self.blocks, price_per_mwh):
-                self.blocks[t].electricity_purchase_price.set_value(
-                    round(price, self.round_digits)
-                )
-        else:
-            raise ValueError(
-                "'price_per_mwh' list must be the same length as time horizon"
-            )
-
-    @property
-    def generation_transmission_limit(self) -> list:
-        return [
-            self.blocks[t].generation_transmission_limit.value
-            for t in self.blocks.index_set()
-        ]
-
-    @generation_transmission_limit.setter
-    def generation_transmission_limit(self, limit_mw: list):
-        if len(limit_mw) == len(self.blocks):
-            for t, limit in zip(self.blocks, limit_mw):
-                self.blocks[t].generation_transmission_limit.set_value(
-                    round(limit, self.round_digits)
-                )
-        else:
-            raise ValueError("'limit_mw' list must be the same length as time horizon")
-
-    @property
-    def load_transmission_limit(self) -> list:
-        return [
-            self.blocks[t].load_transmission_limit.value
-            for t in self.blocks.index_set()
-        ]
-
-    @load_transmission_limit.setter
-    def load_transmission_limit(self, limit_mw: list):
-        if len(limit_mw) == len(self.blocks):
-            for t, limit in zip(self.blocks, limit_mw):
-                self.blocks[t].load_transmission_limit.set_value(
-                    round(limit, self.round_digits)
-                )
-        else:
-            raise ValueError("'limit_mw' list must be the same length as time horizon")
-
-    @property
-    def system_generation(self) -> list:
-        return [self.blocks[t].system_generation.value for t in self.blocks.index_set()]
-
-    # @system_generation.setter
-    # def system_generation(self, system_gen_mw: list):
-    #     if len(system_gen_mw) == len(self.blocks):
-    #         for t, gen in zip(self.blocks, system_gen_mw):
-    #             self.blocks[t].system_generation.set_value(round(gen, self.round_digits))
-    #     else:
-    #         raise ValueError("'system_gen_mw' list must be the same length as time horizon")
-
-    @property
-    def system_load(self) -> list:
-        return [self.blocks[t].system_load.value for t in self.blocks.index_set()]
-
-    # @system_load.setter
-    # def system_load(self, system_load_mw: list):
-    #     if len(system_load_mw) == len(self.blocks):
-    #         for t, load in zip(self.blocks, system_load_mw):
-    #             self.blocks[t].system_load.set_value(round(load, self.round_digits))
-    #     else:
-    #         raise ValueError("'system_load_mw' list must be the same length as time horizon")
-
-    @property
-    def electricity_sold(self) -> list:
-        return [self.blocks[t].electricity_sold.value for t in self.blocks.index_set()]
-
-    @property
-    def electricity_purchased(self) -> list:
-        return [
-            self.blocks[t].electricity_purchased.value for t in self.blocks.index_set()
-        ]
-
-    @property
-    def is_generating(self) -> list:
-        return [self.blocks[t].is_generating.value for t in self.blocks.index_set()]
-
-    @property
-    def not_generating(self) -> list:
-        return [self.blocks[t].not_generating.value for t in self.blocks.index_set()]
+    def extract_dispatch_results(self, grid_block):
+        """
+        Extract dispatch results from the optimization solution.
+        
+        Args:
+            grid_block: Pyomo block containing the solution
+            
+        Returns:
+            dict: Dictionary containing dispatch results
+        """
+        try:
+            results = {
+                'power_imported': pyomo.value(grid_block.power_imported),
+                'power_exported': pyomo.value(grid_block.power_exported),
+                'net_grid_power': pyomo.value(grid_block.net_grid_power),
+                'importing': pyomo.value(grid_block.importing),
+                'grid_connected': pyomo.value(grid_block.grid_connected),
+                'import_cost': (pyomo.value(grid_block.power_imported) * 
+                               pyomo.value(grid_block.electricity_purchase_price)),
+                'export_revenue': (pyomo.value(grid_block.power_exported) * 
+                                  pyomo.value(grid_block.electricity_sell_price))
+            }
+            
+            return results
+            
+        except Exception as e:
+            # Return zeros if extraction fails
+            return {
+                'power_imported': 0.0,
+                'power_exported': 0.0,
+                'net_grid_power': 0.0,
+                'importing': 0.0,
+                'grid_connected': 1.0,
+                'import_cost': 0.0,
+                'export_revenue': 0.0
+            }

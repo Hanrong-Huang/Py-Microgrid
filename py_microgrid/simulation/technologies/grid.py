@@ -1,5 +1,6 @@
 from typing import Iterable, List, Sequence, Optional, Union, Any
-
+import os
+import pandas as pd
 import numpy as np
 from attrs import define, field
 import PySAM.Grid as GridModel
@@ -16,50 +17,67 @@ from py_microgrid.utilities.validators import gt_zero
 @define
 class GridConfig(BaseClass):
     """
-    Configuration data class for Grid. 
+    Configuration data class for Grid (actual electrical grid connection).
+    
+    This represents a true grid connection that can import/export power based on dispatch factors.
 
     Args:
-        interconnect_kw: grid interconnection limit (kW)
-        fin_model: Financial model. Can be any of the following:
-
-            - a string representing an argument to `Singleowner.default`
-
-            - a dict representing a `CustomFinancialModel`
-
-            - an object representing a `CustomFinancialModel` or `Singleowner.Singleowner` instance
-
-        ppa_price: PPA price [$/kWh] used in the financial model
+        enabled: Whether grid connection is enabled (True for grid-connected, False for off-grid)
+        interconnect_kw: Maximum grid interconnection capacity (kW)
+        import_limit_kw: Maximum power import from grid (kW). If None, uses interconnect_kw
+        export_limit_kw: Maximum power export to grid (kW). If None, uses interconnect_kw
+        dispatch_factors_file: Path to CSV file containing hourly dispatch factors (8760 values)
+        import_price_multiplier: Multiplier for import price (dispatch factor * base_price * multiplier)
+        export_price_multiplier: Multiplier for export price (dispatch factor * base_price * multiplier)
+        base_import_price: Base import price ($/kWh) before applying dispatch factors
+        base_export_price: Base export price ($/kWh) before applying dispatch factors
+        allow_export: Whether power export to grid is allowed
+        fin_model: Financial model configuration
     """
+    enabled: bool = field(default=True)
     interconnect_kw: float = field(validator=gt_zero)
+    import_limit_kw: Optional[float] = field(default=None)
+    export_limit_kw: Optional[float] = field(default=None)
+    dispatch_factors_file: Optional[str] = field(default=None)
+    import_price_multiplier: float = field(default=1.0)
+    export_price_multiplier: float = field(default=0.8)  # Typically lower than import price
+    base_import_price: float = field(default=0.12)  # $/kWh
+    base_export_price: float = field(default=0.08)  # $/kWh
+    allow_export: bool = field(default=True)
     fin_model: Optional[Union[str, dict, FinancialModelType]] = None
-    ppa_price: Optional[Union[Iterable, float]] = None
 
 
 @define
 class Grid(PowerSource):
+    """
+    True electrical grid connection for microgrid systems.
+    
+    This class represents an actual connection to the electrical grid that can:
+    - Import power when local generation is insufficient
+    - Export excess power when enabled
+    - Use dispatch factors for time-varying pricing
+    - Operate in grid-connected or off-grid modes
+    """
     site: SiteInfo
     config: GridConfig
     py_microgrid: Optional[Any] = None
 
-    missed_load: np.ndarray = field(init=False)
-    missed_load_percentage: float = field(init=False, default=0.)
-    schedule_curtailed: np.ndarray = field(init=False)
-    schedule_curtailed_percentage: float = field(init=False, default=0.)
-    total_gen_max_feasible_year1: np.ndarray = field(init=False)
-
+    # Grid-specific attributes
+    dispatch_factors: np.ndarray = field(init=False)
+    import_prices: np.ndarray = field(init=False)
+    export_prices: np.ndarray = field(init=False)
+    power_imported: np.ndarray = field(init=False)
+    power_exported: np.ndarray = field(init=False)
+    grid_revenue: float = field(init=False, default=0.0)
+    grid_cost: float = field(init=False, default=0.0)
+    
     def __attrs_post_init__(self):
         """
-        Class that houses the hybrid system performance and financials. Enforces interconnection and curtailment
-        limits based on PySAM's Grid module.
-
-        Args:
-            site: Power source site information
-            config: dict, used to instantiate a `GridConfig` instance
-            py_microgrid: HOPP system object
+        Initialize the grid connection with dispatch factors and pricing.
         """
+        # Initialize financial model
         system_model = GridModel.default("GenericSystemSingleOwner")
-
-        # parse user input for financial model
+        
         if isinstance(self.config.fin_model, str):
             financial_model = Singleowner.default(self.config.fin_model)
         elif isinstance(self.config.fin_model, dict):
@@ -67,172 +85,221 @@ class Grid(PowerSource):
         else:
             financial_model = self.config.fin_model
 
-        # default
         if financial_model is None:
             financial_model = Singleowner.from_existing(system_model, "GenericSystemSingleOwner")
             financial_model.value("add_om_num_types", 1)
 
         super().__init__("Grid", self.site, system_model, financial_model)
-
-        if self.config.ppa_price is not None:
-            self.ppa_price = self.config.ppa_price
-
+        
+        # Set interconnection limits
         self._system_model.GridLimits.enable_interconnection_limit = 1
         self._system_model.GridLimits.grid_interconnection_limit_kwac = self.config.interconnect_kw
-        self._dispatch = None
-
-        self.missed_load = np.array([0.])
-        self.schedule_curtailed = np.array([0.])
-        self.total_gen_max_feasible_year1 = np.array([0.])
-
+        
+        # Set import/export limits
+        if self.config.import_limit_kw is None:
+            self.config.import_limit_kw = self.config.interconnect_kw
+        if self.config.export_limit_kw is None:
+            self.config.export_limit_kw = self.config.interconnect_kw
+            
+        # Load dispatch factors
+        self._load_dispatch_factors()
+        
+        # Initialize arrays
+        self.power_imported = np.zeros(8760)
+        self.power_exported = np.zeros(8760)
+        self.generation_profile = np.zeros(8760)
+        
+    def _load_dispatch_factors(self):
+        """
+        Load dispatch factors from CSV file or use default values.
+        """
+        if self.config.dispatch_factors_file and os.path.exists(self.config.dispatch_factors_file):
+            # Load custom dispatch factors
+            try:
+                df = pd.read_csv(self.config.dispatch_factors_file, header=None)
+                if len(df) != 8760:
+                    raise ValueError(f"Dispatch factors file must contain exactly 8760 values, got {len(df)}")
+                self.dispatch_factors = df.iloc[:, 0].values
+            except Exception as e:
+                raise ValueError(f"Error loading dispatch factors file: {e}")
+        else:
+            # Use default dispatch factors file
+            default_file = os.path.join(
+                os.path.dirname(__file__), 
+                "..", "resource_files", "grid", "dispatch_factors_ts.csv"
+            )
+            if os.path.exists(default_file):
+                try:
+                    df = pd.read_csv(default_file, header=None)
+                    self.dispatch_factors = df.iloc[:, 0].values
+                except Exception as e:
+                    # Fallback to simple time-of-use pattern
+                    self.dispatch_factors = self._generate_default_dispatch_factors()
+            else:
+                # Fallback to simple time-of-use pattern
+                self.dispatch_factors = self._generate_default_dispatch_factors()
+        
+        # Calculate time-varying prices
+        self.import_prices = (self.dispatch_factors * 
+                             self.config.base_import_price * 
+                             self.config.import_price_multiplier)
+        self.export_prices = (self.dispatch_factors * 
+                             self.config.base_export_price * 
+                             self.config.export_price_multiplier)
+    
+    def _generate_default_dispatch_factors(self):
+        """
+        Generate default dispatch factors representing typical grid pricing patterns.
+        Creates a simple time-of-use pattern with:
+        - Off-peak: 0.7 (midnight to 6 AM)
+        - Peak: 1.3 (6 PM to 10 PM)
+        - Standard: 1.0 (other times)
+        """
+        factors = np.ones(8760)
+        
+        for day in range(365):
+            day_start = day * 24
+            # Off-peak hours (midnight to 6 AM): 0.7
+            factors[day_start:day_start + 6] = 0.7
+            # Peak hours (6 PM to 10 PM): 1.3
+            factors[day_start + 18:day_start + 22] = 1.3
+            # Standard hours (6 AM to 6 PM, 10 PM to midnight): 1.0
+            # (already set to 1.0 by default)
+            
+        return factors
+    
     def simulate_grid_connection(
         self,
         hybrid_size_kw: float,
-        total_gen: Union[List[float], np.ndarray],
+        local_generation: Union[List[float], np.ndarray],
+        load_demand: Union[List[float], np.ndarray],
         project_life: int,
-        lifetime_sim: bool,
-        total_gen_max_feasible_year1: Union[List[float], np.ndarray],
-        dispatch_options: Optional[dict] = None
+        lifetime_sim: bool
     ):
-        # Ensure total_gen is an array
-        total_gen = np.array(total_gen)
-        # Extract pv and wind generation profile and calculate total renewable_gen
-        pv_gen = np.array(self.py_microgrid.system.generation_profile.pv)
-        wind_gen = np.array(self.py_microgrid.system.generation_profile.wind)
-        renewable_gen = pv_gen + wind_gen
-    
-        # Calculate the maximum grid output
-        max_grid_output = np.max(total_gen)
-    
-        if self.site.follow_desired_schedule:
-            lifetime_schedule = np.tile(
-                [x * 1e3 for x in self.site.desired_schedule],
-                int(project_life / (len(self.site.desired_schedule) // self.site.n_timesteps))
-            )
-    
-            # Ensure all arrays have the same length
-            min_length = min(len(lifetime_schedule), len(renewable_gen), len(total_gen))
-            lifetime_schedule = lifetime_schedule[:min_length]
-            renewable_gen = renewable_gen[:min_length]
-            total_gen = total_gen[:min_length]
-    
-            # Create a new numpy array for the generation profile
-            # This array will store the grid's output for each time step
-            generation_profile = np.zeros(min_length)
-    
-            # Iterate through each time step
-            for i in range(min_length):
-                # Get the energy demand for this time step
-                demand = lifetime_schedule[i]
-    
-                # Get the available renewable energy (PV + wind) for this time step
-                renewable_available = renewable_gen[i]
-    
-                # Calculate the energy deficit
-                # This is how much additional energy is needed from grid after renewable generation
-                energy_deficit = max(0, demand - renewable_available)
-    
-                # Set the grid output to match the energy deficit, but do not exceed the max output capacity
-                generation_profile[i] = min(energy_deficit, max_grid_output)
-    
-            # Assign the newly created array to self.generation_profile
-            self.generation_profile = generation_profile
-
-        # Ensure these attributes are set as numpy arrays
-        self.generation_profile = np.array(self.generation_profile)
-        self.total_gen_max_feasible_year1 = np.array(total_gen_max_feasible_year1)
-        self.system_capacity_kw = hybrid_size_kw
-        self.gen_max_feasible = np.minimum(
-            total_gen_max_feasible_year1,
-            self.config.interconnect_kw * self.site.interval / 60
-        )
-        self.simulate_power(project_life, lifetime_sim)
-
-        # FIXME: updating capacity credit for reporting only.
-        self.capacity_credit_percent = [i * (self.system_capacity_kw / self.config.interconnect_kw) for i in self.capacity_credit_percent]
-
-    def calc_gen_max_feasible_kwh(self, interconnect_kw: float) -> list:
         """
-        Calculates the maximum feasible generation profile that could have occurred (year 1)
-
+        Simulate grid connection behavior for import/export based on local generation and demand.
+        
         Args:
-        :param interconnect_kw: Interconnection limit [kW]
-
-        :return: maximum feasible generation [kWh]
+            hybrid_size_kw: Total hybrid system capacity (kW)
+            local_generation: Local generation profile (kW) from PV, wind, etc.
+            load_demand: Load demand profile (kW) 
+            project_life: Project lifetime (years)
+            lifetime_sim: Whether to simulate full lifetime
         """
-        W_ac_nom = self.calc_nominal_capacity(interconnect_kw)
-        t_step = self.site.interval / 60  # hr
-        E_net_max_feasible = [min(x, W_ac_nom) * t_step for x in self.total_gen_max_feasible_year1[0:self.site.n_timesteps]]  # [kWh]
-        return E_net_max_feasible
-
+        if not self.config.enabled:
+            # Off-grid mode: no grid interaction
+            self.power_imported = np.zeros(len(local_generation))
+            self.power_exported = np.zeros(len(local_generation))
+            self.generation_profile = np.zeros(len(local_generation))
+            return
+            
+        # Convert to numpy arrays
+        local_generation = np.array(local_generation)
+        load_demand = np.array(load_demand)
+        
+        # Ensure arrays are same length
+        min_length = min(len(local_generation), len(load_demand), len(self.dispatch_factors))
+        local_generation = local_generation[:min_length]
+        load_demand = load_demand[:min_length]
+        
+        # Initialize arrays
+        self.power_imported = np.zeros(min_length)
+        self.power_exported = np.zeros(min_length)
+        self.generation_profile = np.zeros(min_length)
+        
+        # Calculate grid interaction for each time step
+        for i in range(min_length):
+            local_gen = local_generation[i]
+            demand = load_demand[i]
+            
+            # Calculate energy balance
+            energy_balance = local_gen - demand
+            
+            if energy_balance < 0:
+                # Local generation insufficient - import from grid
+                import_needed = abs(energy_balance)
+                self.power_imported[i] = min(import_needed, self.config.import_limit_kw)
+                self.power_exported[i] = 0
+                
+                # Grid acts as a source to meet deficit
+                self.generation_profile[i] = self.power_imported[i]
+                
+            elif energy_balance > 0 and self.config.allow_export:
+                # Excess generation - export to grid
+                export_available = energy_balance
+                self.power_exported[i] = min(export_available, self.config.export_limit_kw)
+                self.power_imported[i] = 0
+                
+                # Grid acts as a sink for excess (negative generation)
+                self.generation_profile[i] = -self.power_exported[i]
+                
+            else:
+                # Balanced or export not allowed
+                self.power_imported[i] = 0
+                self.power_exported[i] = 0
+                self.generation_profile[i] = 0
+        
+        # Calculate financial metrics
+        self._calculate_grid_financials()
+        
+        # Set system capacity for PySAM
+        self.system_capacity_kw = hybrid_size_kw
+        
+        # Simulate power using PySAM
+        self.simulate_power(project_life, lifetime_sim)
+    
+    def _calculate_grid_financials(self):
+        """
+        Calculate grid-related costs and revenues.
+        """
+        if not self.config.enabled:
+            self.grid_cost = 0.0
+            self.grid_revenue = 0.0
+            return
+            
+        # Calculate hourly costs and revenues
+        import_costs = self.power_imported * self.import_prices[:len(self.power_imported)]
+        export_revenues = self.power_exported * self.export_prices[:len(self.power_exported)]
+        
+        # Annual totals
+        self.grid_cost = np.sum(import_costs)
+        self.grid_revenue = np.sum(export_revenues)
+    
     @property
-    def system_capacity_kw(self) -> float:
-        return self._financial_model.value('system_capacity')
-
-    @system_capacity_kw.setter
-    def system_capacity_kw(self, size_kw: float):
-        self._financial_model.value('system_capacity', size_kw)
-
+    def net_grid_cost(self):
+        """Net grid cost (cost - revenue)"""
+        return self.grid_cost - self.grid_revenue
+    
     @property
-    def interconnect_kw(self) -> float:
-        """Interconnection limit [kW]"""
-        return self._system_model.GridLimits.grid_interconnection_limit_kwac
-
-    @interconnect_kw.setter
-    def interconnect_kw(self, interconnect_limit_kw: float):
-        self._system_model.GridLimits.grid_interconnection_limit_kwac = interconnect_limit_kw
-
+    def total_import_energy(self):
+        """Total energy imported from grid (kWh)"""
+        return np.sum(self.power_imported)
+    
     @property
-    def curtailment_ts_kw(self) -> list:
-        """Grid curtailment as energy delivery limit (first year) [MW]"""
-        return [i for i in self._system_model.GridLimits.grid_curtailment]
-
-    @curtailment_ts_kw.setter
-    def curtailment_ts_kw(self, curtailment_limit_timeseries_kw: Sequence):
-        self._system_model.GridLimits.grid_curtailment = curtailment_limit_timeseries_kw
-
+    def total_export_energy(self):
+        """Total energy exported to grid (kWh)"""
+        return np.sum(self.power_exported)
+    
     @property
-    def generation_profile(self) -> Sequence:
-        """System power generated [kW]"""
-        return self._system_model.SystemOutput.gen
-
-    @generation_profile.setter
-    def generation_profile(self, system_generation_kw: Sequence):
-        self._system_model.SystemOutput.gen = system_generation_kw
-
+    def grid_dependency_ratio(self):
+        """Ratio of imported energy to total energy demand"""
+        if hasattr(self, 'py_microgrid') and self.py_microgrid:
+            total_demand = np.sum(self.py_microgrid.site.desired_schedule) * 1000  # Convert MW to kW
+            if total_demand > 0:
+                return self.total_import_energy / total_demand
+        return 0.0
+    
     @property
-    def generation_profile_wo_battery(self) -> Sequence:
-        """System power generated without battery [kW]"""
-        return self._financial_model.value('gen_without_battery')
-
-    @generation_profile_wo_battery.setter
-    def generation_profile_wo_battery(self, system_generation_wo_battery_kw: Sequence):
-        self._system_model.SystemOutput.gen = system_generation_wo_battery_kw
-
-    @property
-    def generation_profile_pre_curtailment(self) -> Sequence:
-        """System power before grid interconnect [kW]"""
-        return self._system_model.Outputs.system_pre_interconnect_kwac
-
-    @property
-    def generation_curtailed(self) -> Sequence:
-        """Generation curtailed due to interconnect limit [kW]"""
-        curtailed = self.generation_profile
-        pre_curtailed = self.generation_profile_pre_curtailment
-        return [pre_curtailed[i] - curtailed[i] for i in range(len(curtailed))]
-
-    @property
-    def curtailment_percent(self) -> float:
-        """Annual energy loss from curtailment and interconnection limit [%]"""
-        return self._system_model.Outputs.annual_ac_curtailment_loss_percent \
-               + self._system_model.Outputs.annual_ac_interconnect_loss_percent
-
-    @property
-    def capacity_factor_after_curtailment(self) -> float:
-        """Capacity factor of the curtailment (year 1) [%]"""
-        return self._system_model.Outputs.capacity_factor_curtailment_ac
-
-    @property
-    def capacity_factor_at_interconnect(self) -> float:
-        """Capacity factor of the curtailment (year 1) [%]"""
-        return self._system_model.Outputs.capacity_factor_interconnect_ac
+    def grid_export_ratio(self):
+        """Ratio of exported energy to total local generation"""
+        if hasattr(self, 'py_microgrid') and self.py_microgrid:
+            # Calculate total local generation
+            total_local_gen = 0
+            if hasattr(self.py_microgrid.system.generation_profile, 'pv'):
+                total_local_gen += np.sum(self.py_microgrid.system.generation_profile.pv)
+            if hasattr(self.py_microgrid.system.generation_profile, 'wind'):
+                total_local_gen += np.sum(self.py_microgrid.system.generation_profile.wind)
+            
+            if total_local_gen > 0:
+                return self.total_export_energy / total_local_gen
+        return 0.0
