@@ -1,0 +1,31 @@
+# Genset Configuration Parameters
+# This file contains all genset/generator-related cost and operational parameters
+# that were previously hardcoded in the system
+
+genset:
+  # Cost parameters (USD)
+  costs:
+    install_cost_per_kw: 500.0  # $/kW - Genset installation cost
+    replacement_cost_per_kw: 500.0  # $/kW - Genset replacement cost
+    om_cost_per_kw_per_op_hour: 0.03  # $/kW/hour - Genset O&M cost per operating hour
+    fuel_cost_per_liter: 1.20  # $/L - Fuel cost per liter
+    
+  # Performance parameters
+  performance:
+    specific_fuel_consumption_l_per_kwh: 0.250  # L/kWh - Fuel consumption rate
+    operational_life_hours: 15000  # hours - Genset operational life
+    efficiency: 0.35  # - Genset electrical efficiency
+    minimum_load_factor: 0.3  # - Minimum load factor (30% of rated capacity)
+    
+  # Environmental parameters
+  environment:
+    specific_co2_per_l_fuel: 2.618  # kg CO2/L - CO2 emissions per liter of fuel
+    specific_nox_per_l_fuel: 0.0123  # kg NOx/L - NOx emissions per liter of fuel
+    specific_sox_per_l_fuel: 0.0024  # kg SOx/L - SOx emissions per liter of fuel
+    
+  # Operational parameters
+  operation:
+    start_up_time: 0.25  # hours - Start-up time
+    shut_down_time: 0.25  # hours - Shut-down time
+    maintenance_interval: 500  # hours - Maintenance interval
+    overhaul_interval: 8000  # hours - Major overhaul interval

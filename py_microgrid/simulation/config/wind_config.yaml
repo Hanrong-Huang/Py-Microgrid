@@ -1,0 +1,32 @@
+# Wind Configuration Parameters
+# This file contains all wind-related efficiency, cost, and operational parameters
+# that were previously hardcoded in the system
+
+wind:
+  # Performance parameters
+  performance:
+    default_max_cp: 0.45  # - Default maximum power coefficient
+    default_hub_height: 80.0  # meters - Default hub height
+    default_rotor_diameter: 77.0  # meters - Default rotor diameter
+    
+  # Cost parameters (USD)
+  costs:
+    installed_cost_per_kw: 2500.0  # $/kW - Wind installed cost
+    om_cost_per_kw_per_year: 40.0  # $/kW/year - Wind O&M cost
+    
+  # Operational parameters
+  operation:
+    cut_in_speed: 3.0  # m/s - Cut-in wind speed
+    cut_out_speed: 25.0  # m/s - Cut-out wind speed
+    rated_speed: 11.0  # m/s - Rated wind speed
+    
+  # Layout parameters
+  layout:
+    min_spacing_diameter: 5.0  # - Minimum spacing in rotor diameters
+    wake_decay_constant: 0.04  # - Wake decay constant
+    
+  # Availability and losses
+  availability:
+    turbine_availability: 0.97  # - Turbine availability factor
+    array_losses: 0.05  # - Array losses (wake effects, etc.)
+    electrical_losses: 0.02  # - Electrical losses

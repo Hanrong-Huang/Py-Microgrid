@@ -40,9 +40,9 @@ class GridConfig(BaseClass):
     export_limit_kw: Optional[float] = field(default=None)
     dispatch_factors_file: Optional[str] = field(default=None)
     import_price_multiplier: float = field(default=1.0)
-    export_price_multiplier: float = field(default=0.8)  # Typically lower than import price
-    base_import_price: float = field(default=0.12)  # $/kWh
-    base_export_price: float = field(default=0.08)  # $/kWh
+    export_price_multiplier: float = field(default=None)
+    base_import_price: float = field(default=None)  # $/kWh
+    base_export_price: float = field(default=None)  # $/kWh
     allow_export: bool = field(default=True)
     fin_model: Optional[Union[str, dict, FinancialModelType]] = None
 
@@ -90,6 +90,15 @@ class Grid(PowerSource):
             financial_model.value("add_om_num_types", 1)
 
         super().__init__("Grid", self.site, system_model, financial_model)
+        
+        # Load default pricing parameters from configuration if not specified
+        from py_microgrid.simulation.config import get_parameter_with_default
+        if self.config.base_import_price is None:
+            self.config.base_import_price = get_parameter_with_default('grid', 0.12, 'pricing', 'base_import_price')
+        if self.config.base_export_price is None:
+            self.config.base_export_price = get_parameter_with_default('grid', 0.08, 'pricing', 'base_export_price')
+        if self.config.export_price_multiplier is None:
+            self.config.export_price_multiplier = get_parameter_with_default('grid', 0.8, 'pricing', 'export_price_multiplier')
         
         # Set interconnection limits
         self._system_model.GridLimits.enable_interconnection_limit = 1
@@ -150,19 +159,27 @@ class Grid(PowerSource):
     def _generate_default_dispatch_factors(self):
         """
         Generate default dispatch factors representing typical grid pricing patterns.
-        Creates a simple time-of-use pattern with:
-        - Off-peak: 0.7 (midnight to 6 AM)
-        - Peak: 1.3 (6 PM to 10 PM)
-        - Standard: 1.0 (other times)
+        Loads time-of-use patterns from configuration.
         """
-        factors = np.ones(8760)
+        # Load time-of-use parameters from configuration
+        from py_microgrid.simulation.config import get_parameter_with_default
+        off_peak_factor = get_parameter_with_default('grid', 0.7, 'dispatch_factors', 'off_peak_factor')
+        peak_factor = get_parameter_with_default('grid', 1.3, 'dispatch_factors', 'peak_factor')
+        standard_factor = get_parameter_with_default('grid', 1.0, 'dispatch_factors', 'standard_factor')
+        
+        off_peak_start = get_parameter_with_default('grid', 0, 'time_of_use', 'off_peak_start')
+        off_peak_end = get_parameter_with_default('grid', 6, 'time_of_use', 'off_peak_end')
+        peak_start = get_parameter_with_default('grid', 18, 'time_of_use', 'peak_start')
+        peak_end = get_parameter_with_default('grid', 22, 'time_of_use', 'peak_end')
+        
+        factors = np.ones(8760) * standard_factor
         
         for day in range(365):
             day_start = day * 24
-            # Off-peak hours (midnight to 6 AM): 0.7
-            factors[day_start:day_start + 6] = 0.7
-            # Peak hours (6 PM to 10 PM): 1.3
-            factors[day_start + 18:day_start + 22] = 1.3
+            # Off-peak hours
+            factors[day_start + off_peak_start:day_start + off_peak_end] = off_peak_factor
+            # Peak hours
+            factors[day_start + peak_start:day_start + peak_end] = peak_factor
             # Standard hours (6 AM to 6 PM, 10 PM to midnight): 1.0
             # (already set to 1.0 by default)
             

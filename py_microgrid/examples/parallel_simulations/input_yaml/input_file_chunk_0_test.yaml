@@ -8802,7 +8802,6 @@ site:
   - 11.19855
   - 8.534775
   - 10.76328
-  grid_resource_file: /home/z5142067/miniconda3/envs/microgrid/lib/python3.8/site-packages/hopp/simulation/resource_files/grid/dispatch_factors_ts.csv
   hub_height: 50.0
   solar: true
   solar_resource_file: /home/z5142067/miniconda3/envs/microgrid/lib/python3.8/site-packages/hopp/simulation/resource_files/solar/-33.4574_148.9957_psmv3_60_2020.csv

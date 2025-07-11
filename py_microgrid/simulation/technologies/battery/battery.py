@@ -150,7 +150,10 @@ class Battery(PowerSource):
                                           module_specs=Battery.module_specs)
         self._system_model.ParamsPack.h = 20
         self._system_model.ParamsPack.Cp = 900
-        self._system_model.ParamsCell.resistance = 0.001
+        # Load cell resistance from configuration
+        from py_microgrid.simulation.config import get_parameter_with_default
+        cell_resistance = get_parameter_with_default('battery', 0.001, 'operation', 'cell_resistance')
+        self._system_model.ParamsCell.resistance = cell_resistance
         self._system_model.ParamsCell.C_rate = self.config.system_capacity_kw / self.config.system_capacity_kwh
 
         # Minimum set of parameters to set to get statefulBattery to work

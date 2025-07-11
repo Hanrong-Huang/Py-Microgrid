@@ -1,0 +1,34 @@
+# Battery Configuration Parameters
+# This file contains all battery-related efficiency, cost, and operational parameters
+# that were previously hardcoded in the system
+
+battery:
+  # Efficiency parameters
+  efficiency:
+    round_trip_efficiency: 88.0  # % - Battery round-trip efficiency including converter losses
+    internal_efficiency_pct: 97.5  # % - Battery internal efficiency
+    inverter_efficiency_pct: 96.0  # % - Battery inverter efficiency
+    rectifier_efficiency_pct: 96.0  # % - Battery rectifier efficiency
+    
+  # Cost parameters (USD)
+  costs:
+    lifecycle_cost_per_kWh_cycle: 0.0265  # $/kWh-cycle - Battery lifecycle cost per kWh cycle
+    installed_cost_per_kw: 840.0  # $/kW - Battery power cost
+    installed_cost_per_kwh: 420.0  # $/kWh - Battery energy cost
+    replacement_cost_per_kw: 410.0  # $/kW - Battery power replacement cost
+    replacement_cost_per_kwh: 200.0  # $/kWh - Battery energy replacement cost
+    om_cost_per_kwh_per_year: 10.0  # $/kWh/year - Battery O&M cost
+    
+  # Operational parameters
+  operation:
+    soc_min_pct: 20.0  # % - Minimum state of charge
+    soc_init_pct: 50.0  # % - Initial state of charge
+    replacement_year: 10  # years - Battery replacement year
+    operational_life_years: 15  # years - Battery operational life
+    cell_resistance: 0.001  # Ohm - Cell resistance parameter
+    
+  # Dispatch parameters
+  dispatch:
+    time_weighting_factor: 0.995  # - Discount factor for time periods
+    n_look_ahead_periods: 48  # hours - Number of look-ahead periods for dispatch
+    n_roll_periods: 24  # hours - Number of roll periods for simulation

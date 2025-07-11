@@ -44,7 +44,7 @@ class PVConfig(BaseClass):
     layout_model: Optional[Union[dict, PVLayout]] = field(default=None)
     fin_model: Optional[Union[str, dict, FinancialModelType]] = field(default=None)
     dc_degradation: Optional[List[float]] = field(default=None)
-    approx_nominal_efficiency: Optional[float] = field(default=0.19)
+    approx_nominal_efficiency: Optional[float] = field(default=None)
     module_unit_mass: Optional[float] = field(default=11.092)
 
 
@@ -105,7 +105,9 @@ class PVPlant(PowerSource):
         if self.config.approx_nominal_efficiency is not None:
             self.approx_nominal_efficiency = self.config.approx_nominal_efficiency
         else:
-            self.approx_nominal_efficiency = 0.19
+            # Load default efficiency from configuration
+            from py_microgrid.simulation.config import get_parameter_with_default
+            self.approx_nominal_efficiency = get_parameter_with_default('pv', 0.19, 'efficiency', 'default')
 
         if self.config.module_unit_mass is not None:
             self.module_unit_mass = self.config.module_unit_mass
@@ -173,7 +175,13 @@ class PVPlant(PowerSource):
         else:
             raise ValueError("Invalid module type")
         if solar_module_type is not None:
-            efficiency_mapping = {0: 0.19, 1: 0.21, 2: 0.18}
+            # Load efficiency mapping from configuration
+            from py_microgrid.simulation.config import get_parameter_with_default
+            efficiency_mapping = {
+                0: get_parameter_with_default('pv', 0.19, 'efficiency', 'standard_silicon'),
+                1: get_parameter_with_default('pv', 0.21, 'efficiency', 'premium_silicon'),
+                2: get_parameter_with_default('pv', 0.18, 'efficiency', 'thin_film')
+            }
             if solar_module_type in efficiency_mapping:
                 self.approx_nominal_efficiency = efficiency_mapping[solar_module_type]
             else:

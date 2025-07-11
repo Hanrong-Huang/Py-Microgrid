@@ -209,11 +209,13 @@ class WindPlant(PowerSource):
         :return:
         """
         elevation = 0
-        wind_default_max_cp = 0.45
+        # Load wind parameters from configuration
+        from py_microgrid.simulation.config import get_parameter_with_default
+        wind_default_max_cp = get_parameter_with_default('wind', 0.45, 'performance', 'default_max_cp')
         wind_default_max_tip_speed = 60
         wind_default_max_tip_speed_ratio = 8
-        wind_default_cut_in_speed = 4
-        wind_default_cut_out_speed = 25
+        wind_default_cut_in_speed = get_parameter_with_default('wind', 4, 'operation', 'cut_in_speed')
+        wind_default_cut_out_speed = get_parameter_with_default('wind', 25, 'operation', 'cut_out_speed')
         wind_default_drive_train = 0
         try:
             # could fail if current rotor diameter is too big or small for rating

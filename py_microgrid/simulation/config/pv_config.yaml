@@ -1,0 +1,33 @@
+# PV Configuration Parameters
+# This file contains all PV-related efficiency, cost, and operational parameters
+# that were previously hardcoded in the system
+
+pv:
+  # Efficiency parameters by module type
+  efficiency:
+    standard_silicon: 0.19  # 19% - Standard crystalline silicon modules
+    premium_silicon: 0.21  # 21% - Premium crystalline silicon modules
+    thin_film: 0.18  # 18% - Thin film modules
+    default: 0.19  # 19% - Default efficiency when not specified
+    
+  # Module type mapping (for backwards compatibility)
+  module_types:
+    0: 0.19  # Standard crystalline silicon
+    1: 0.21  # Premium
+    2: 0.18  # Thin film
+    
+  # Cost parameters (USD)
+  costs:
+    installed_cost_per_kw: 2000.0  # $/kW - PV installed cost
+    om_cost_per_kw_per_year: 10.0  # $/kW/year - PV O&M cost
+    
+  # Performance parameters
+  performance:
+    default_annual_degradation: 0.5  # %/year - Default annual degradation rate
+    dc_ac_ratio: 1.3  # - Default DC to AC ratio
+    
+  # System parameters
+  system:
+    default_tilt: 20.0  # degrees - Default tilt angle
+    default_azimuth: 180.0  # degrees - Default azimuth (south-facing)
+    gcr: 0.4  # - Ground coverage ratio

@@ -73,14 +73,18 @@ class SimpleBatteryDispatch(PowerStorageDispatch):
             self._system_model.value("input_power", 0.0)
             self.control_variable = "input_power"
 
-    def _set_model_specific_parameters(self, round_trip_efficiency=88.0):
+    def _set_model_specific_parameters(self, round_trip_efficiency=None):
         """Sets model-specific parameters.
 
         Args:
             round_trip_efficiency (float, optional): The round-trip efficiency including converter efficiency.
-                Defaults to 88.0, which includes converter efficiency.
+                If None, loads from configuration file.
 
         """
+        # Load from configuration if not provided
+        if round_trip_efficiency is None:
+            from py_microgrid.simulation.config import get_parameter_with_default
+            round_trip_efficiency = get_parameter_with_default('battery', 88.0, 'efficiency', 'round_trip_efficiency')
         self.round_trip_efficiency = (
             round_trip_efficiency  # Including converter efficiency
         )

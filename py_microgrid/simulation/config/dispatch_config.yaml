@@ -1,0 +1,39 @@
+# Dispatch Configuration Parameters
+# This file contains all dispatch-related optimization and control parameters
+# that were previously hardcoded in the system
+
+dispatch:
+  # Battery dispatch parameters
+  battery:
+    lifecycle_cost_per_kWh_cycle: 0.0265  # $/kWh-cycle - Battery lifecycle cost per kWh cycle
+    time_weighting_factor: 0.995  # - Discount factor for time periods
+    n_look_ahead_periods: 48  # hours - Number of look-ahead periods for dispatch
+    n_roll_periods: 24  # hours - Number of roll periods for simulation
+    
+  # Clustering parameters
+  clustering:
+    price_limit: 3.5  # $/kWh - Price limit for clustering
+    n_clusters: 30  # - Number of clusters for representative days
+    
+  # Optimization parameters
+  optimization:
+    max_load_reduction_percentage: 0.2  # - Maximum load reduction percentage (20%)
+    convergence_tolerance: 1e-6  # - Convergence tolerance for optimization
+    max_iterations: 1000  # - Maximum iterations for optimization
+    
+  # Grid charging parameters
+  grid_charging:
+    enabled: true  # - Whether grid charging is allowed
+    price_threshold: 0.08  # $/kWh - Price threshold for grid charging
+    max_charging_rate: 0.5  # - Maximum charging rate (C-rate)
+    
+  # Load following parameters
+  load_following:
+    response_time: 0.1  # seconds - Response time for load following
+    tracking_accuracy: 0.02  # - Tracking accuracy (±2%)
+    
+  # Predictive parameters
+  predictive:
+    forecast_horizon: 24  # hours - Forecast horizon for predictive control
+    update_interval: 1  # hours - Update interval for forecasts
+    uncertainty_factor: 0.1  # - Uncertainty factor for forecasts
