@@ -17,6 +17,7 @@ from py_microgrid.simulation.technologies.csp.trough_plant import TroughConfig, 
 from py_microgrid.simulation.technologies.wave.mhk_wave_plant import MHKWavePlant, MHKConfig
 from py_microgrid.simulation.technologies.battery import Battery, BatteryConfig, BatteryStateless, BatteryStatelessConfig
 from py_microgrid.simulation.technologies.genset import Genset, GensetConfig
+from py_microgrid.simulation.technologies.grid import Grid, GridConfig
 from py_microgrid.simulation.technologies.reopt import REopt
 from py_microgrid.simulation.technologies.layout.hybrid_layout import HybridLayout
 from py_microgrid.simulation.technologies.dispatch.hybrid_dispatch_builder_solver import HybridDispatchBuilderSolver
@@ -33,7 +34,8 @@ PowerSourceTypes = Union[
     TroughPlant,
     Battery,
     BatteryStateless,
-    Genset
+    Genset,
+    Grid
 ]
 
 class HybridSimulationOutput:
@@ -45,17 +47,16 @@ class HybridSimulationOutput:
         Output structure where attributes are the technology keys used in :class:`HybridSimulation`
 
         .. note::
-            Hybrid results are saved under the ``hybrid`` attribute and come from the ``grid`` model within
+            Hybrid results are saved under the ``hybrid`` attribute and come from the ``genset`` model within
             :class:`HybridSimulation`
         """
         self.technologies = power_sources
         for k in self._keys:
             setattr(self, k, 0)
         for k in self.technologies.keys():
-            if k == 'grid':
+            if k == 'genset':
                 setattr(self, 'hybrid', 0)
-            else:
-                setattr(self, k, 0)
+            setattr(self, k, 0)
 
     def create(self):
         """Creates an instance using ``power_sources``
@@ -67,10 +68,9 @@ class HybridSimulationOutput:
     def __repr__(self):
         repr_dict = {}
         for k in self.technologies.keys():
-            if k == 'grid':
+            if k == 'genset':
                 repr_dict['hybrid'] = self.hybrid
-            else:
-                repr_dict[k] = getattr(self, k)
+            repr_dict[k] = getattr(self, k)
         repr_dict['hybrid'] = self.hybrid
         return json.dumps(repr_dict)
 
@@ -102,6 +102,7 @@ class TechnologiesConfig(BaseClass):
         battery: Battery config. If `tracking` is False, uses `BatteryStatelessConfig`.
             Otherwise, defaults to `BatteryConfig`.
         genset: Genset config
+        grid: Grid config
 
     """
     pv: Optional[Union[PVConfig, DetailedPVConfig]] = field(default=None)
@@ -111,6 +112,7 @@ class TechnologiesConfig(BaseClass):
     trough: Optional[TroughConfig] = field(default=None)
     battery: Optional[Union[BatteryConfig, BatteryStatelessConfig]] = field(default=None)
     genset: Optional[GensetConfig] = field(default=None)
+    grid: Optional[GridConfig] = field(default=None)
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -148,6 +150,9 @@ class TechnologiesConfig(BaseClass):
 
         if "genset" in data:
             config["genset"] = GensetConfig.from_dict(data["genset"])
+
+        if "grid" in data:
+            config["grid"] = GridConfig.from_dict(data["grid"])
 
         return super().from_dict(config)
 
@@ -189,6 +194,7 @@ class HybridSimulation(BaseClass):
     trough: Optional[TroughPlant] = field(init=False, default=None)
     battery: Optional[Union[Battery, BatteryStateless]] = field(init=False, default=None)
     genset: Optional[Genset] = field(init=False, default=None)
+    grid: Optional[Grid] = field(init=False, default=None)
     technologies: Dict[str, PowerSourceTypes] = field(init=False)
 
     dispatch_builder: HybridDispatchBuilderSolver = field(init=False)
@@ -268,10 +274,23 @@ class HybridSimulation(BaseClass):
             self.genset = Genset(self.site, config=genset_config, py_microgrid=self.py_microgrid)
             self.technologies["genset"] = self.genset
 
-            self.interconnect_kw = self.grid.interconnect_kw
+            self.interconnect_kw = self.genset.interconnect_kw
             
         else:
             raise Exception("Genset parameters must be specified")
+        
+        # Initialize grid component (true electrical grid connection)
+        grid_config = self.tech_config.grid
+        
+        if grid_config is not None and grid_config.enabled:
+            self.grid = Grid(self.site, config=grid_config, py_microgrid=self.py_microgrid)
+            self.technologies["grid"] = self.grid
+            
+            logger.info("Created HybridSystem.grid with interconnect capacity {} MW".format(
+                grid_config.interconnect_kw/1000.))
+        else:
+            self.grid = None
+            logger.info("Grid connection disabled - operating in off-grid mode")
         
         self.check_consistent_financial_models()
 
@@ -660,8 +679,8 @@ class HybridSimulation(BaseClass):
 
         # Consolidate grid generation by copying over power and storage generation information
         if self.battery:
-            self.grid.generation_profile_wo_battery = total_gen_before_battery
-        self.grid.simulate_grid_connection(
+            self.genset.generation_profile_wo_battery = total_gen_before_battery
+        self.genset.simulate_grid_connection(
             hybrid_size_kw, 
             total_gen, 
             project_life, 
@@ -811,7 +830,7 @@ class HybridSimulation(BaseClass):
                 continue
             if hasattr(self, v):
                 setattr(aep, v, getattr(getattr(self, v), "annual_energy_kwh"))
-        aep.hybrid = sum(self.grid.generation_profile[0:self.site.n_timesteps])
+        aep.hybrid = sum(self.genset.generation_profile[0:self.site.n_timesteps])
         return aep
 
     @property
@@ -819,8 +838,9 @@ class HybridSimulation(BaseClass):
         """Hybrid generation profiles by technology [kWh]"""
         gen = self.outputs_factory.create()
         for v in self.technologies.keys():
-            if v == "grid":
+            if v == "genset":
                 setattr(gen, 'hybrid', getattr(getattr(self, v), "generation_profile"))
+                setattr(gen, 'genset', getattr(getattr(self, v), "generation_profile"))
             if hasattr(self, v):
                 setattr(gen, v, getattr(getattr(self, v), "generation_profile"))
         return gen

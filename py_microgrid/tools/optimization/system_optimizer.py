@@ -56,11 +56,11 @@ class SystemOptimizer:
                 
                 if result.success:
                     optimal_config = [
-                        int(round(result.x[0])),
-                        int(round(result.x[1])),
-                        self.round_battery_capacity(result.x[2]),
-                        int(round(result.x[3])),
-                        int(round(result.x[4]))
+                        int(round(result.x[0])),  # PV capacity
+                        int(round(result.x[1])),  # Wind turbines
+                        self.round_battery_capacity(result.x[2]),  # Battery capacity kWh
+                        int(round(result.x[3])),  # Battery capacity kW
+                        int(round(result.x[4]))   # Genset capacity
                     ]
                     lcoe, optimal_results = self.objective_function(optimal_config)
                     
@@ -86,14 +86,14 @@ class SystemOptimizer:
             int(round(x[1])),  # Wind turbines
             self.round_battery_capacity(x[2]),  # Battery capacity kWh
             int(round(x[3])),  # Battery capacity kW
-            int(round(x[4]))   # Grid interconnect
+            int(round(x[4]))   # Genset capacity
         ]
         penalized_lcoe, _ = self.objective_function(x_rounded)
         return penalized_lcoe
     
     def objective_function(self, x: List[float]) -> Tuple[float, Dict[str, Any]]:
         """Calculate objective function value and system metrics."""
-        pv_size, num_turbines, battery_capacity_kwh, battery_capacity_kw, grid_interconnect_kw = x
+        pv_size, num_turbines, battery_capacity_kwh, battery_capacity_kw, genset_capacity_kw = x
         battery_capacity_kwh = self.round_battery_capacity(battery_capacity_kwh)
         
         # Update configuration
@@ -102,7 +102,7 @@ class SystemOptimizer:
         config['technologies']['wind']['num_turbines'] = int(num_turbines)
         config['technologies']['battery']['system_capacity_kwh'] = float(battery_capacity_kwh)
         config['technologies']['battery']['system_capacity_kw'] = float(battery_capacity_kw)
-        config['technologies']['grid']['interconnect_kw'] = float(grid_interconnect_kw)
+        config['technologies']['genset']['interconnect_kw'] = float(genset_capacity_kw)
         self.config_manager.save_yaml_safely(config, self.yaml_file_path)
 
         # Run simulation
@@ -119,7 +119,7 @@ class SystemOptimizer:
         pv_total_generation = np.sum(hybrid_plant.generation_profile.pv)
         wind_total_generation = np.sum(hybrid_plant.generation_profile.wind)
         battery_total_generation = np.sum(hybrid_plant.generation_profile.battery)
-        genset_total_generation = np.sum(hybrid_plant.generation_profile.grid)
+        genset_total_generation = np.sum(hybrid_plant.generation_profile.genset)
         total_system_generation = pv_total_generation + wind_total_generation + genset_total_generation
 
         # Calculate costs
@@ -130,7 +130,7 @@ class SystemOptimizer:
         df = pd.DataFrame({
             'PV Generation (kW)': np.array(hybrid_plant.generation_profile.pv[:8760]),
             'Wind Generation (kW)': np.array(hybrid_plant.generation_profile.wind[:8760]),
-            'Genset Generation (kW)': np.array(hybrid_plant.generation_profile.grid[:8760]),
+            'Genset Generation (kW)': np.array(hybrid_plant.generation_profile.genset[:8760]),
             'Original Battery Generation (kW)': np.array(hybrid_plant.generation_profile.battery[:8760]),
             'Original Load (kW)': np.array(hybrid_plant.site.desired_schedule[:8760]) * 1000
         })
@@ -145,7 +145,7 @@ class SystemOptimizer:
         result = {
             "PV Capacity (kW)": pv_size,
             "Wind Turbine Capacity (kW)": num_turbines * 1000,
-            "Genset Capacity (kW)": grid_interconnect_kw,
+            "Genset Capacity (kW)": genset_capacity_kw,
             "Battery Energy Capacity (kWh)": battery_capacity_kwh,
             "Battery Power Capacity (kW)": battery_capacity_kw,
             "Total System Generation (kWh)": total_system_generation,
@@ -163,8 +163,8 @@ class SystemOptimizer:
 
     def _calculate_costs(self, hybrid_plant, config, genset_total_generation) -> Dict[str, Dict[str, float]]:
         """Calculate costs for all system components."""
-        genset_capacity_kw = hybrid_plant.grid.interconnect_kw
-        genset_op_hours_per_year = np.sum(np.array(hybrid_plant.grid.generation_profile) > 0) / self.economic_calculator.project_lifetime
+        genset_capacity_kw = hybrid_plant.genset.interconnect_kw
+        genset_op_hours_per_year = np.sum(np.array(hybrid_plant.genset.generation_profile) > 0) / self.economic_calculator.project_lifetime
         generator_life_hours = 15000
         generator_life_years = generator_life_hours / genset_op_hours_per_year
         num_genset_replacements = float(self.economic_calculator.project_lifetime / generator_life_years) - 1
