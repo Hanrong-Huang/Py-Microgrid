@@ -14,6 +14,7 @@ from py_microgrid.simulation.technologies.dispatch.power_sources.wave_dispatch i
 )
 
 from py_microgrid.simulation.technologies.dispatch.grid_dispatch import GridDispatch
+from py_microgrid.simulation.technologies.dispatch.genset_dispatch import GensetDispatch
 from py_microgrid.simulation.technologies.dispatch.hybrid_dispatch_options import (
     HybridDispatchOptions,
 )

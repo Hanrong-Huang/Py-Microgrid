@@ -3,6 +3,7 @@ from py_microgrid.simulation.technologies.clustering import Clustering, Affinity
 from py_microgrid.simulation.technologies.csp.csp_plant import CspPlant
 from py_microgrid.simulation.technologies.pv.detailed_pv_plant import DetailedPVPlant
 from py_microgrid.simulation.technologies.grid import Grid
+from py_microgrid.simulation.technologies.genset import Genset
 from py_microgrid.simulation.technologies.power_source import PowerSource
 from py_microgrid.simulation.technologies.pv.pv_plant import PVPlant
 from py_microgrid.simulation.technologies.reopt import REopt
