@@ -34,7 +34,7 @@ site:
         - 0.0
     tz: -6
     urdb_label: 5ca4d1175457a39b23b3d45e
-    year: 2020
+    year: 2022
   desired_schedule:
   - 9.510846
   - 10.97592
@@ -8796,21 +8796,21 @@ site:
   - 11.19855
   - 8.534775
   - 10.76328
-  grid_resource_file: c:\Users\Public\miniconda\envs\microgrid\lib\site-packages\py_microgrid\simulation\resource_files\grid\dispatch_factors_ts.csv
+  grid_resource_file: C:\Users\Hanrong Huang\OneDrive - UNSW\Desktop\py_microgrid\py_microgrid\simulation\resource_files\grid\dispatch_factors_ts.csv
   hub_height: 50.0
   solar: true
-  solar_resource_file: c:\Users\Public\miniconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/solar\-33.5265_149.1588_psmv3_60_2020.csv
+  solar_resource_file: c:\users\hanrong huang\onedrive - unsw\desktop\py_microgrid\py_microgrid\simulation/resource_files/solar\-33.5265_149.1588_psmv3_60_2021.csv
   wave: false
   wind: true
-  wind_resource_file: c:\Users\Public\miniconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/wind\-33.5265_149.1588_NASA_2020_60min_50m.srw
+  wind_resource_file: c:\users\hanrong huang\onedrive - unsw\desktop\py_microgrid\py_microgrid\simulation/resource_files/wind\-33.5265_149.1588_NASA_2022_60min_50m.srw
 technologies:
   battery:
     chemistry: LFPGraphite
     initial_SOC: 90.0
     maximum_SOC: 90.0
     minimum_SOC: 20.0
-    system_capacity_kw: 2931.0
-    system_capacity_kwh: 5000.0
+    system_capacity_kw: 2470.0
+    system_capacity_kwh: 6000.0
   financial:
     Singleowner:
       analysis_period: 25
@@ -8846,7 +8846,7 @@ technologies:
     - 0.5
     - 0.5
     - 0.5
-    system_capacity_kw: 29310.0
+    system_capacity_kw: 19417.0
   wind:
     num_turbines: 8
     turbine_rating_kw: 1000
