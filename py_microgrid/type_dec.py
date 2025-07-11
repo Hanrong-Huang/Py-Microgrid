@@ -90,6 +90,85 @@ def resource_file_converter(resource_file: str) -> Union[Path, str]:
                 "or be absolute."
             )
 
+def desired_schedule_converter(data: Union[list, str]) -> NDArrayFloat:
+    """
+    Converter for desired_schedule that supports both direct list input and file path input.
+    
+    Args:
+        data: Either a list of numbers (MW values) or a string path to a CSV file
+        
+    Returns:
+        NDArrayFloat: NumPy array of desired schedule values in MW
+        
+    Raises:
+        FileNotFoundError: If file path is provided but file doesn't exist
+        ValueError: If file cannot be parsed or contains invalid data
+        TypeError: If data is neither list nor string
+    """
+    import pandas as pd
+    
+    if isinstance(data, list):
+        # Backwards compatibility: direct list input
+        try:
+            return np.array(data, dtype=hopp_float_type)
+        except (TypeError, ValueError) as e:
+            raise TypeError(f"desired_schedule list contains invalid data: {e}. Data given: {data}")
+    
+    elif isinstance(data, str):
+        # New feature: file path input
+        if data == "":
+            return np.array([], dtype=hopp_float_type)
+        
+        # Try to resolve the file path
+        try:
+            # Check relative to py_microgrid directory first
+            file_path = hopp_path / data
+            if not file_path.exists():
+                # Try absolute path
+                file_path = Path(data)
+                if not file_path.exists():
+                    raise FileNotFoundError(f"desired_schedule file not found: {data}")
+            
+            # Load CSV file
+            df = pd.read_csv(file_path)
+            
+            # Handle different CSV formats
+            if len(df.columns) == 1:
+                # Single column CSV
+                schedule_data = df.iloc[:, 0].values
+            elif 'desired_schedule' in df.columns:
+                # Named column
+                schedule_data = df['desired_schedule'].values
+            elif 'load' in df.columns:
+                # Alternative name
+                schedule_data = df['load'].values
+            else:
+                # Take first column
+                schedule_data = df.iloc[:, 0].values
+                logger.warning(f"desired_schedule CSV file has multiple columns, using first column: {df.columns[0]}")
+            
+            # Convert to numpy array and validate
+            schedule_array = np.array(schedule_data, dtype=hopp_float_type)
+            
+            # Check for invalid values
+            if np.any(np.isnan(schedule_array)) or np.any(np.isinf(schedule_array)):
+                raise ValueError(f"desired_schedule file contains NaN or infinite values: {data}")
+            
+            if np.any(schedule_array < 0):
+                raise ValueError(f"desired_schedule file contains negative values: {data}")
+            
+            logger.info(f"Loaded desired_schedule from file: {data} ({len(schedule_array)} values)")
+            return schedule_array
+            
+        except Exception as e:
+            if isinstance(e, (FileNotFoundError, ValueError)):
+                raise e
+            else:
+                raise ValueError(f"Error loading desired_schedule file {data}: {e}")
+    
+    else:
+        raise TypeError(f"desired_schedule must be a list or file path string, got {type(data)}: {data}")
+
 def attr_serializer(inst: type, field: Attribute, value: Any):
     if isinstance(value, np.ndarray):
         return value.tolist()

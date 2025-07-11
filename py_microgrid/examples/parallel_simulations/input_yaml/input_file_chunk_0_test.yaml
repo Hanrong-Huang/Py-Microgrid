@@ -14,7 +14,7 @@ site:
     lon: 148.9957  # Longitude (essential for weather data and solar calculations)
     
     # Optional parameters (can be omitted if not needed)
-    year: 2020  # Year for weather data (defaults to 2012 if not specified)
+    year: 2020  # Year for weather data 
     
     # Optional: Only needed for layout optimization
     site_boundaries:
@@ -41,9 +41,6 @@ site:
     # Optional: Only needed for REopt integration
     urdb_label: 5ca4d1175457a39b23b3d45e
     
-    # Removed parameters (no longer needed):
-    # elev: 1099  # Elevation - only used for metadata
-    # tz: -6      # Timezone - only used for metadata/time conversions
   desired_schedule:
   - 9.510846
   - 10.97592

@@ -24,7 +24,7 @@ from py_microgrid.utilities.log import hybrid_logger as logger
 from py_microgrid.utilities.keys import set_nrel_key_dot_env
 from py_microgrid.type_dec import (
     hopp_array_converter as converter, NDArrayFloat, resource_file_converter,
-    hopp_float_type
+    desired_schedule_converter, hopp_float_type
 )
 from py_microgrid.simulation.base import BaseClass
 from py_microgrid.utilities.validators import contains
@@ -65,7 +65,7 @@ class SiteInfo(BaseClass):
     grid_resource_file: Union[Path, str] = field(default="", converter=resource_file_converter)
     hub_height: hopp_float_type = field(default=97., converter=hopp_float_type)
     capacity_hours: NDArray = field(default=[], converter=converter(bool))
-    desired_schedule: NDArrayFloat = field(default=[], converter=converter())
+    desired_schedule: NDArrayFloat = field(default=[], converter=desired_schedule_converter)
     solar: bool = field(default=True)
     wind: bool = field(default=True)
     wave: bool = field(default=False)

@@ -1,0 +1,53 @@
+config:
+  dispatch_options:
+    battery_dispatch: heuristic_load_following
+    grid_charging: true
+    solver: glpk
+    
+name: schedule_path_example
+
+site:
+  data:
+    # Only required parameters
+    lat: 39.7555  # Latitude (essential for weather data and solar calculations)
+    lon: -105.2211  # Longitude (essential for weather data and solar calculations)
+    
+    # Optional: Year for weather data (defaults to 2012 if not specified)
+    year: 2020
+    
+  # NEW FEATURE: Load schedule from file instead of embedding full array
+  desired_schedule: "py_microgrid/examples/parallel_simulations/load_data/desired_schedule_sample.csv"
+  
+  # Resource files (will be auto-generated if not provided)
+  solar_resource_file: ""
+  wind_resource_file: ""
+
+technologies:
+  # All components with enable/disable flags
+  pv:
+    enabled: true
+    system_capacity_kw: 10000
+    
+  wind:
+    enabled: true
+    num_turbines: 5
+    turbine_rating_kw: 1000
+    
+  battery:
+    enabled: true
+    chemistry: LFPGraphite
+    system_capacity_kw: 2000
+    system_capacity_kwh: 5000
+    
+  genset:
+    enabled: true
+    interconnect_kw: 15000
+    
+  grid:
+    enabled: false  # Set to true for grid-connected mode
+    interconnect_kw: 10000
+    
+  financial:
+    Singleowner:
+      analysis_period: 25
+      real_discount_rate: 5.88
