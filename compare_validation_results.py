@@ -126,7 +126,7 @@ def print_comparison_report(comparison: Dict[str, Any], old_results: Dict[str, A
     
     # Check for errors
     if 'error' in comparison:
-        print("❌ VALIDATION FAILED")
+        print("✗ VALIDATION FAILED")
         print(f"Error: {comparison['error']}")
         if 'old_error' in comparison:
             print(f"Old version error: {comparison['old_error']}")
@@ -136,10 +136,10 @@ def print_comparison_report(comparison: Dict[str, Any], old_results: Dict[str, A
     
     # Print overall result
     if comparison['overall_match']:
-        print("✅ BACKWARDS COMPATIBILITY VALIDATED")
+        print("✓ BACKWARDS COMPATIBILITY VALIDATED")
         print("All metrics match within acceptable tolerances!")
     else:
-        print("❌ BACKWARDS COMPATIBILITY ISSUES DETECTED")
+        print("✗ BACKWARDS COMPATIBILITY ISSUES DETECTED")
         print(f"Failing metrics: {comparison['summary']['failing_metrics']}")
     
     print()
@@ -151,7 +151,7 @@ def print_comparison_report(comparison: Dict[str, Any], old_results: Dict[str, A
     print("-" * 80)
     
     for metric_key, metric_data in comparison['metrics'].items():
-        status = "✅" if metric_data['match'] else "❌"
+        status = "✓" if metric_data['match'] else "✗"
         print(f"{status} {metric_data['name']}")
         print(f"    Old: {metric_data['old_value']:,.6f}")
         print(f"    New: {metric_data['new_value']:,.6f}")
@@ -166,10 +166,10 @@ def print_comparison_report(comparison: Dict[str, Any], old_results: Dict[str, A
     
     # Print recommendations
     if comparison['overall_match']:
-        print("✅ RECOMMENDATION: Safe to proceed with the refactoring.")
+        print("✓ RECOMMENDATION: Safe to proceed with the refactoring.")
         print("The new version produces identical results to the old version.")
     else:
-        print("⚠️  RECOMMENDATION: Review the failing metrics before proceeding.")
+        print("! RECOMMENDATION: Review the failing metrics before proceeding.")
         print("There may be issues with the refactoring that need to be addressed.")
     
     print("=" * 80)

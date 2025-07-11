@@ -34,8 +34,8 @@ class GridConfig(BaseClass):
         allow_export: Whether power export to grid is allowed
         fin_model: Financial model configuration
     """
-    enabled: bool = field(default=True)
     interconnect_kw: float = field(validator=gt_zero)
+    enabled: bool = field(default=True)
     import_limit_kw: Optional[float] = field(default=None)
     export_limit_kw: Optional[float] = field(default=None)
     dispatch_factors_file: Optional[str] = field(default=None)

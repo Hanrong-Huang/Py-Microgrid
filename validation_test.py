@@ -228,7 +228,7 @@ def main():
     print("=" * 60)
     
     if results['success']:
-        print("✅ Test PASSED")
+        print("✓ Test PASSED")
         print(f"PV Capacity: {results['pv_capacity_kw']:.0f} kW")
         print(f"Wind Capacity: {results['wind_capacity_kw']:.0f} kW")
         print(f"Battery Energy: {results['battery_energy_kwh']:.0f} kWh")
@@ -239,7 +239,7 @@ def main():
         print(f"CO2 Emissions: {results['total_co2_emissions_tonnes']:.1f} tonnes")
         print(f"Demand Met: {results['demand_met_percentage']:.1f}%")
     else:
-        print("❌ Test FAILED")
+        print("✗ Test FAILED")
         print(f"Error: {results.get('error', 'Unknown error')}")
         print(f"Error Type: {results.get('error_type', 'Unknown')}")
     

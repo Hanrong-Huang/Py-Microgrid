@@ -4,7 +4,7 @@ import pyomo.environ as pyomo
 from pyomo.network import Port, Arc
 from pyomo.environ import units as u
 
-from py_microgenset.simulation.technologies.dispatch.dispatch import Dispatch
+from py_microgrid.simulation.technologies.dispatch.dispatch import Dispatch
 
 
 class GensetDispatch(Dispatch):
