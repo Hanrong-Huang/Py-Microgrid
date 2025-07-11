@@ -8816,7 +8816,7 @@ technologies:
       analysis_period: 25
       inflation_rate: 2
       real_discount_rate: 5.88
-  grid:
+  genset:
     interconnect_kw: 17000.0
     ppa_price: 0.4
   pv:

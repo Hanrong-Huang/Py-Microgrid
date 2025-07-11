@@ -16,7 +16,7 @@ from py_microgrid.simulation.technologies.csp.tower_plant import TowerConfig, To
 from py_microgrid.simulation.technologies.csp.trough_plant import TroughConfig, TroughPlant
 from py_microgrid.simulation.technologies.wave.mhk_wave_plant import MHKWavePlant, MHKConfig
 from py_microgrid.simulation.technologies.battery import Battery, BatteryConfig, BatteryStateless, BatteryStatelessConfig
-from py_microgrid.simulation.technologies.grid import Grid, GridConfig
+from py_microgrid.simulation.technologies.genset import Genset, GensetConfig
 from py_microgrid.simulation.technologies.reopt import REopt
 from py_microgrid.simulation.technologies.layout.hybrid_layout import HybridLayout
 from py_microgrid.simulation.technologies.dispatch.hybrid_dispatch_builder_solver import HybridDispatchBuilderSolver
@@ -33,7 +33,7 @@ PowerSourceTypes = Union[
     TroughPlant,
     Battery,
     BatteryStateless,
-    Grid
+    Genset
 ]
 
 class HybridSimulationOutput:
@@ -101,7 +101,7 @@ class TechnologiesConfig(BaseClass):
         trough: CSP trough config
         battery: Battery config. If `tracking` is False, uses `BatteryStatelessConfig`.
             Otherwise, defaults to `BatteryConfig`.
-        grid: Grid config
+        genset: Genset config
 
     """
     pv: Optional[Union[PVConfig, DetailedPVConfig]] = field(default=None)
@@ -110,7 +110,7 @@ class TechnologiesConfig(BaseClass):
     tower: Optional[TowerConfig] = field(default=None)
     trough: Optional[TroughConfig] = field(default=None)
     battery: Optional[Union[BatteryConfig, BatteryStatelessConfig]] = field(default=None)
-    grid: Optional[GridConfig] = field(default=None)
+    genset: Optional[GensetConfig] = field(default=None)
 
     @classmethod
     def from_dict(cls, data: dict):
@@ -146,8 +146,8 @@ class TechnologiesConfig(BaseClass):
             else:
                 config["battery"] = BatteryConfig.from_dict(data["battery"])
 
-        if "grid" in data:
-            config["grid"] = GridConfig.from_dict(data["grid"])
+        if "genset" in data:
+            config["genset"] = GensetConfig.from_dict(data["genset"])
 
         return super().from_dict(config)
 
@@ -188,7 +188,7 @@ class HybridSimulation(BaseClass):
     tower: Optional[TowerPlant] = field(init=False, default=None)
     trough: Optional[TroughPlant] = field(init=False, default=None)
     battery: Optional[Union[Battery, BatteryStateless]] = field(init=False, default=None)
-    grid: Optional[Grid] = field(init=False, default=None)
+    genset: Optional[Genset] = field(init=False, default=None)
     technologies: Dict[str, PowerSourceTypes] = field(init=False)
 
     dispatch_builder: HybridDispatchBuilderSolver = field(init=False)
@@ -262,16 +262,16 @@ class HybridSimulation(BaseClass):
         # if 'geothermal' in tech_config.keys():
         #     raise NotImplementedError("Geothermal plant not yet implemented")
 
-        grid_config = self.tech_config.grid
+        genset_config = self.tech_config.genset
 
-        if grid_config is not None:
-            self.grid = Grid(self.site, config=grid_config, py_microgrid=self.py_microgrid)
-            self.technologies["grid"] = self.grid
+        if genset_config is not None:
+            self.genset = Genset(self.site, config=genset_config, py_microgrid=self.py_microgrid)
+            self.technologies["genset"] = self.genset
 
             self.interconnect_kw = self.grid.interconnect_kw
             
         else:
-            raise Exception("Grid parameters must be specified")
+            raise Exception("Genset parameters must be specified")
         
         self.check_consistent_financial_models()
 
@@ -293,8 +293,8 @@ class HybridSimulation(BaseClass):
             self.dispatch_factors = self.site.elec_prices.data
 
         # allow user-specified ppa price
-        if grid_config.ppa_price:
-            self.ppa_price = grid_config.ppa_price
+        if genset_config.ppa_price:
+            self.ppa_price = genset_config.ppa_price
 
     def check_consistent_financial_models(self):
         fin_models = {}
@@ -1033,14 +1033,14 @@ class HybridSimulation(BaseClass):
         if self.battery:
             outputs['Battery (MW)'] = self.battery.system_capacity_kw / 1000
             outputs['Battery (MWh)'] = self.battery.system_capacity_kwh / 1000
-        if self.grid:
-            outputs['Grid System Capacity (MW)'] = self.grid.system_capacity_kw / 1000
-            outputs['Grid Interconnect (MW)'] = self.grid.interconnect_kw / 1000
-            outputs['Grid Curtailment Percent (%)'] = self.grid.curtailment_percent
-            # outputs['Grid Capacity Factor After Curtailment (%)'] = self.grid.capacity_factor_after_curtailment
-            outputs['Grid Capacity Factor at Interconnect (%)'] = self.grid.capacity_factor_at_interconnect
+        if self.genset:
+            outputs['Genset System Capacity (MW)'] = self.genset.system_capacity_kw / 1000
+            outputs['Genset Interconnect (MW)'] = self.genset.interconnect_kw / 1000
+            outputs['Genset Curtailment Percent (%)'] = self.genset.curtailment_percent
+            # outputs['Genset Capacity Factor After Curtailment (%)'] = self.genset.capacity_factor_after_curtailment
+            outputs['Genset Capacity Factor at Interconnect (%)'] = self.genset.capacity_factor_at_interconnect
             if self.site.follow_desired_schedule:
-                outputs['Missed Load year 1 (MWh)'] = sum(self.grid.missed_load[0:8760])/1.e3
+                outputs['Missed Load year 1 (MWh)'] = sum(self.genset.missed_load[0:8760])/1.e3
                 outputs['Missed Scheduled Load (%)'] = self.grid.missed_load_percentage * 100
                 outputs['Schedule Curtailment year 1 (MWh)'] = sum(self.grid.schedule_curtailed[0:8760])/1.e3
                 outputs['Schedule Curtailment (%)'] = self.grid.schedule_curtailed_percentage * 100
@@ -1130,8 +1130,8 @@ class HybridSimulation(BaseClass):
                 outputs[o_name] = output_value
 
         # time series dispatch
-        if self.grid.value('ppa_multiplier_model') == 1:
-            outputs['Grid Total Revenue (TOD)'] = self.grid.total_revenue
+        if self.genset.value('ppa_multiplier_model') == 1:
+            outputs['Genset Total Revenue (TOD)'] = self.genset.total_revenue
 
         # export to file
         if filename != "":
