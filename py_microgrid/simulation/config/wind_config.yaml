@@ -16,7 +16,7 @@ wind:
     
   # Operational parameters
   operation:
-    cut_in_speed: 3.0  # m/s - Cut-in wind speed
+    cut_in_speed: 4.0  # m/s - Cut-in wind speed (original hardcoded value)
     cut_out_speed: 25.0  # m/s - Cut-out wind speed
     rated_speed: 11.0  # m/s - Rated wind speed
     

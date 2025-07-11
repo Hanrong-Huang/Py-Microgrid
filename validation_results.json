@@ -1,5 +1,0 @@
-{
-  "success": false,
-  "error": "No module named 'py_microgenset'",
-  "error_type": "ModuleNotFoundError"
-}
