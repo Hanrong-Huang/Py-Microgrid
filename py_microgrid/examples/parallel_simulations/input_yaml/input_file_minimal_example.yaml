@@ -1,0 +1,53 @@
+config:
+  dispatch_options:
+    battery_dispatch: heuristic_load_following
+    grid_charging: true
+    solver: glpk
+    
+name: minimal_example
+
+site:
+  data:
+    # Only required parameters
+    lat: -33.5265  # Latitude (essential for weather data and solar calculations)
+    lon: 149.1588  # Longitude (essential for weather data and solar calculations)
+    
+    # Optional: Year for weather data (defaults to 2012 if not specified)
+    year: 2020
+    
+  # Simple constant load schedule (can also be loaded from file)
+  desired_schedule: [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]  # 24 hours of 10 MW
+  
+  # Resource files (will be auto-generated if not provided)
+  solar_resource_file: ""
+  wind_resource_file: ""
+
+technologies:
+  # All components with enable/disable flags
+  pv:
+    enabled: true
+    system_capacity_kw: 10000
+    
+  wind:
+    enabled: true
+    num_turbines: 5
+    turbine_rating_kw: 1000
+    
+  battery:
+    enabled: true
+    chemistry: LFPGraphite
+    system_capacity_kw: 2000
+    system_capacity_kwh: 5000
+    
+  genset:
+    enabled: true
+    interconnect_kw: 15000
+    
+  grid:
+    enabled: false  # Set to true for grid-connected mode
+    interconnect_kw: 10000
+    
+  financial:
+    Singleowner:
+      analysis_period: 25
+      real_discount_rate: 5.88

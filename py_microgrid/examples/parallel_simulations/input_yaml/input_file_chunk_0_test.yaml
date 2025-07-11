@@ -9,9 +9,14 @@ config:
 name: input_file_chunk_0_test
 site:
   data:
-    elev: 1099
-    lat: -33.4574
-    lon: 148.9957
+    # Required parameters
+    lat: -33.4574  # Latitude (essential for weather data and solar calculations)
+    lon: 148.9957  # Longitude (essential for weather data and solar calculations)
+    
+    # Optional parameters (can be omitted if not needed)
+    year: 2020  # Year for weather data (defaults to 2012 if not specified)
+    
+    # Optional: Only needed for layout optimization
     site_boundaries:
       verts:
       - - 3.06
@@ -32,9 +37,13 @@ site:
         - 151.62
       - - 708.14
         - 0.0
-    tz: -6
+    
+    # Optional: Only needed for REopt integration
     urdb_label: 5ca4d1175457a39b23b3d45e
-    year: 2020
+    
+    # Removed parameters (no longer needed):
+    # elev: 1099  # Elevation - only used for metadata
+    # tz: -6      # Timezone - only used for metadata/time conversions
   desired_schedule:
   - 9.510846
   - 10.97592
