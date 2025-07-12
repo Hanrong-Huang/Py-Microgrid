@@ -55,7 +55,7 @@ class ResourceDataManager:
 
     def _download_nasa_solar_data(self, latitude: float, longitude: float, year: str, file_path: str) -> str:
         """
-        Downloads solar data from NASA Power API for a full year and formats it for HOPP compatibility.
+        Downloads solar data from NASA Power API for a full year and formats it for HOPP compatibility. This is for solar data after 2020.
         
         Args:
             latitude: Site latitude
@@ -144,7 +144,7 @@ class ResourceDataManager:
 
     def download_solar_data(self, latitude: float, longitude: float, year: str) -> str:
         """
-        Get solar resource data for a full year, first trying existing file then downloading if needed.
+        Get solar resource data from Himawari for a full year, first trying existing file then downloading if needed. This is for solar data before 2020.
         
         Note: Both Himawari (≤2020) and NASA Power (>2020) provide full-year datasets only.
         
