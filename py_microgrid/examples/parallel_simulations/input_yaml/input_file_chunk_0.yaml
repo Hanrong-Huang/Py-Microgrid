@@ -1,0 +1,93 @@
+config:
+  dispatch_options:
+    battery_dispatch: heuristic_load_following
+    grid_charging: true
+    include_lifecycle_count: false
+    n_look_ahead_periods: 48
+    pv_charging_only: false
+    solver: glpk
+name: input_file_chunk_0_test
+site:
+  data:
+    elev: 1099
+    lat: -33.5265
+    lon: 149.1588
+    site_boundaries:
+      verts:
+      - - 3.06
+        - 288.87
+      - - 0.0
+        - 1084.03
+      - - 1784.05
+        - 1084.24
+      - - 1794.09
+        - 999.64
+      - - 1494.34
+        - 950.97
+      - - 712.64
+        - 262.8
+      - - 1216.98
+        - 272.36
+      - - 1217.76
+        - 151.62
+      - - 708.14
+        - 0.0
+    tz: -6
+    urdb_label: 5ca4d1175457a39b23b3d45e
+    year: 2020
+  desired_schedule: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\examples\parallel_simulations\load_data\Load  # absolute path
+    data.csv
+  grid_resource_file: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\simulation\resource_files\grid\dispatch_factors_ts.csv  # absolute path
+  hub_height: 50.0
+  solar: true
+  solar_resource_file: d:\Anaconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/solar\-33.5265_149.1588_psmv3_60_2020.csv  # absolute path
+  wave: false
+  wind: true
+  wind_resource_file: d:\Anaconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/wind\-33.5265_149.1588_NASA_2020_60min_50m.srw  # absolute path
+technologies:
+  battery:
+    chemistry: LFPGraphite
+    initial_SOC: 90.0
+    maximum_SOC: 90.0
+    minimum_SOC: 20.0
+    system_capacity_kw: 1900.0
+    system_capacity_kwh: 8000.0
+  financial:
+    Singleowner:
+      analysis_period: 25
+      inflation_rate: 2
+      real_discount_rate: 5.88
+  grid:
+    interconnect_kw: 19215.0
+    ppa_price: 0.4
+  pv:
+    dc_degradation:
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    - 0.5
+    system_capacity_kw: 9500.0
+  wind:
+    num_turbines: 6
+    turbine_rating_kw: 1000
