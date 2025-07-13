@@ -9,7 +9,6 @@ config:
 name: input_file_chunk_0_test
 site:
   data:
-    elev: 1099
     lat: -33.5265
     lon: 149.1588
     site_boundaries:
@@ -32,9 +31,6 @@ site:
         - 151.62
       - - 708.14
         - 0.0
-    tz: -6
-    urdb_label: 5ca4d1175457a39b23b3d45e
-    year: 2020
   desired_schedule: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\examples\parallel_simulations\load_data\Load  # absolute path
     data.csv
   grid_resource_file: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\simulation\resource_files\grid\dispatch_factors_ts.csv  # absolute path
