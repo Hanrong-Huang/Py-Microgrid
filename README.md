@@ -153,10 +153,12 @@ if result:
 ```yaml
 site:
   data:
-    lat: 0
-    lon: 0
-  solar_resource_file: ""
-  wind_resource_file: ""
+    lat: 0   # location latitude
+    lon: 0   # location longitude
+  solar_resource_file: ""   # path to your solar resource file
+  wind_resource_file: ""   # path to your wind resource file
+  grid_resource_file: ""   # path to your grid dispatch file
+  desired_schedule: ""   # path to your load data file
 technologies:
   pv:
     system_capacity_kw: 10000
