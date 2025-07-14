@@ -55,19 +55,22 @@ class EconomicCalculator:
         return future_value / ((1 + self.discount_rate) ** self.project_lifetime)
 
     def calculate_lcoe(self, total_system_cost: float, total_load_served: float) -> float:
-            """
-            Calculate Levelized Cost of Energy (LCOE).
-            
-            Args:
-                total_system_cost: Total system cost over lifetime.
-                total_load_served: Total energy delivered to load over lifetime.
-                
-            Returns:
-                float: LCOE in $/kWh.
-            """
-            present_value_costs = self.calculate_present_value(total_system_cost)
-            present_value_load = self.calculate_present_value(total_load_served)
-            return present_value_costs / present_value_load
+        """
+        Calculate Levelized Cost of Energy (LCOE).
+
+        Args:
+            total_system_cost: Total system cost over lifetime.
+            total_load_served: Total energy delivered to load over lifetime.
+
+        Returns:
+            float: LCOE in $/kWh.
+        """
+        if total_load_served <= 0:
+            return 1e6
+
+        present_value_costs = self.calculate_present_value(total_system_cost)
+        present_value_load = self.calculate_present_value(total_load_served)
+        return present_value_costs / present_value_load
     
     def calculate_penalty(self, demand_met_percentage: float) -> float:
         """
