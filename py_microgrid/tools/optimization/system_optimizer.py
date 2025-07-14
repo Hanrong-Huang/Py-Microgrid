@@ -95,14 +95,17 @@ class SystemOptimizer:
         """Calculate objective function value and system metrics."""
         pv_size, num_turbines, battery_capacity_kwh, battery_capacity_kw, grid_interconnect_kw = x
         battery_capacity_kwh = self.round_battery_capacity(battery_capacity_kwh)
-        
+
         # Update configuration
         config = self.config_manager.load_yaml_safely(self.yaml_file_path)
         config['technologies']['pv']['system_capacity_kw'] = float(pv_size)
         config['technologies']['wind']['num_turbines'] = int(num_turbines)
         config['technologies']['battery']['system_capacity_kwh'] = float(battery_capacity_kwh)
         config['technologies']['battery']['system_capacity_kw'] = float(battery_capacity_kw)
-        config['technologies']['grid']['interconnect_kw'] = float(grid_interconnect_kw)
+        if 'grid' in config['technologies']:
+            config['technologies']['grid']['interconnect_kw'] = float(grid_interconnect_kw)
+        else:
+            grid_interconnect_kw = 0
         self.config_manager.save_yaml_safely(config, self.yaml_file_path)
 
         # Run simulation
@@ -119,7 +122,7 @@ class SystemOptimizer:
         pv_total_generation = np.sum(hybrid_plant.generation_profile.pv)
         wind_total_generation = np.sum(hybrid_plant.generation_profile.wind)
         battery_total_generation = np.sum(hybrid_plant.generation_profile.battery)
-        genset_total_generation = np.sum(hybrid_plant.generation_profile.grid)
+        genset_total_generation = np.sum(hybrid_plant.generation_profile.grid) if 'grid' in config['technologies'] else 0
         total_system_generation = pv_total_generation + wind_total_generation + genset_total_generation
 
         # Calculate costs
@@ -163,19 +166,27 @@ class SystemOptimizer:
 
     def _calculate_costs(self, hybrid_plant, config, genset_total_generation) -> Dict[str, Dict[str, float]]:
         """Calculate costs for all system components."""
-        genset_capacity_kw = hybrid_plant.grid.interconnect_kw
-        genset_op_hours_per_year = np.sum(np.array(hybrid_plant.grid.generation_profile) > 0) / self.economic_calculator.project_lifetime
-        generator_life_hours = 15000
-        generator_life_years = generator_life_hours / genset_op_hours_per_year
-        num_genset_replacements = float(self.economic_calculator.project_lifetime / generator_life_years) - 1
+        if 'grid' in config['technologies']:
+            genset_capacity_kw = hybrid_plant.grid.interconnect_kw
+            genset_op_hours_per_year = np.sum(np.array(hybrid_plant.grid.generation_profile) > 0) / self.economic_calculator.project_lifetime
+            generator_life_hours = 15000
+            generator_life_years = generator_life_hours / genset_op_hours_per_year
+            num_genset_replacements = float(self.economic_calculator.project_lifetime / generator_life_years) - 1
 
-        # Genset costs
-        genset_install_cost = genset_capacity_kw * 500
-        genset_replace_cost = num_genset_replacements * genset_capacity_kw * 500
-        genset_om_cost = 0.03 * genset_capacity_kw * genset_op_hours_per_year * self.economic_calculator.project_lifetime
-        fuel_consumption = genset_total_generation * 0.250
-        fuel_cost = fuel_consumption * 1.20
-        co2_emissions = fuel_consumption * 2.618
+            # Genset costs
+            genset_install_cost = genset_capacity_kw * 500
+            genset_replace_cost = num_genset_replacements * genset_capacity_kw * 500
+            genset_om_cost = 0.03 * genset_capacity_kw * genset_op_hours_per_year * self.economic_calculator.project_lifetime
+            fuel_consumption = genset_total_generation * 0.250
+            fuel_cost = fuel_consumption * 1.20
+            co2_emissions = fuel_consumption * 2.618
+
+            genset_costs = {
+                'total': genset_install_cost + genset_replace_cost + genset_om_cost + fuel_cost,
+                'co2_emissions': co2_emissions
+            }
+        else:
+            genset_costs = {'total': 0, 'co2_emissions': 0}
 
         # Battery costs
         battery_capacity_kwh = config['technologies']['battery']['system_capacity_kwh']
@@ -184,19 +195,16 @@ class SystemOptimizer:
         battery_om_cost = 10 * battery_capacity_kwh * self.economic_calculator.project_lifetime
 
         return {
-            'genset': {
-                'total': genset_install_cost + genset_replace_cost + genset_om_cost + fuel_cost,
-                'co2_emissions': co2_emissions
-            },
+            'genset': genset_costs,
             'battery': {
                 'total': battery_installed_cost + battery_replace_cost + battery_om_cost
             },
             'pv': {
-                'total': hybrid_plant.pv.total_installed_cost + 
+                'total': hybrid_plant.pv.total_installed_cost +
                         10 * hybrid_plant.system_capacity_kw.pv * self.economic_calculator.project_lifetime
             },
             'wind': {
-                'total': hybrid_plant.wind.total_installed_cost + 
+                'total': hybrid_plant.wind.total_installed_cost +
                         40 * hybrid_plant.system_capacity_kw.wind * self.economic_calculator.project_lifetime
             }
         }
