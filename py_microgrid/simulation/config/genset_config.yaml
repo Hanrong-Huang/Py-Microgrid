@@ -8,7 +8,7 @@ genset:
     install_cost_per_kw: 500.0  # $/kW - Genset installation cost
     replacement_cost_per_kw: 500.0  # $/kW - Genset replacement cost
     om_cost_per_kw_per_op_hour: 0.03  # $/kW/hour - Genset O&M cost per operating hour
-    fuel_cost_per_liter: 1.20  # $/L - Fuel cost per liter
+    fuel_cost_per_liter: 1.20  # $/L - Fuel cost per liter (original value)
     
   # Performance parameters
   performance:

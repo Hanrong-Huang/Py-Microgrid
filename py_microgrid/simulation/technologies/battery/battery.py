@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from attrs import define, field
-import PySAM.BatteryStateful as BatteryModel
+import PySAM.Battery as BatteryModel
 import PySAM.BatteryTools as BatteryTools
 import PySAM.Singleowner as Singleowner
 from py_microgrid.simulation.base import BaseClass
@@ -125,7 +125,7 @@ class Battery(PowerSource):
     def __attrs_post_init__(self):
         """
         """
-        system_model = BatteryModel.default(self.config.chemistry)
+        system_model = BatteryModel.default(self.config_name)
 
         if isinstance(self.config.fin_model, dict):
             financial_model = CustomFinancialModel(self.config.fin_model)
@@ -148,21 +148,19 @@ class Battery(PowerSource):
                                           self.config.system_capacity_kwh,
                                           self.system_voltage_volts,
                                           module_specs=Battery.module_specs)
-        self._system_model.ParamsPack.h = 20
-        self._system_model.ParamsPack.Cp = 900
+        self._system_model.BatteryCell.batt_h_to_ambient = 20
+        self._system_model.BatteryCell.batt_Cp = 900
         # Load cell resistance from configuration
         from py_microgrid.simulation.config import get_parameter_with_default
         cell_resistance = get_parameter_with_default('battery', 0.001, 'operation', 'cell_resistance')
-        self._system_model.ParamsCell.resistance = cell_resistance
-        self._system_model.ParamsCell.C_rate = self.config.system_capacity_kw / self.config.system_capacity_kwh
+        self._system_model.BatteryCell.batt_resistance = cell_resistance
+        self._system_model.BatteryCell.batt_C_rate = self.config.system_capacity_kw / self.config.system_capacity_kwh
 
-        # Minimum set of parameters to set to get statefulBattery to work
-        self._system_model.value("control_mode", 0.0)
-        self._system_model.value("input_current", 0.0)
-        self._system_model.value("dt_hr", 1.0)
-        self._system_model.value("minimum_SOC", self.config.minimum_SOC)
-        self._system_model.value("maximum_SOC", self.config.maximum_SOC)
-        self._system_model.value("initial_SOC", self.config.initial_SOC)
+        # Minimum set of parameters to set to get Battery to work
+        self._system_model.BatteryCell.batt_minimum_SOC = self.config.minimum_SOC
+        self._system_model.BatteryCell.batt_maximum_SOC = self.config.maximum_SOC
+        self._system_model.BatteryCell.batt_initial_SOC = self.config.initial_SOC
+        self._system_model.Simulation.timestep_minutes = 60.0  # 1 hour timestep
 
         self._dispatch = None
 
@@ -175,7 +173,7 @@ class Battery(PowerSource):
     @property
     def system_capacity_voltage(self) -> tuple:
         """Battery energy capacity [kWh] and voltage [VDC]"""
-        return self._system_model.ParamsPack.nominal_energy, self._system_model.ParamsPack.nominal_voltage
+        return self._system_model.BatteryCell.batt_Qfull, self._system_model.BatteryCell.batt_Vnom
 
     @system_capacity_voltage.setter
     def system_capacity_voltage(self, capacity_voltage: tuple):
@@ -197,7 +195,7 @@ class Battery(PowerSource):
     @property
     def system_capacity_kwh(self) -> float:
         """Battery energy capacity [kWh]"""
-        return self._system_model.ParamsPack.nominal_energy
+        return self._system_model.BatteryCell.batt_Qfull
 
     @system_capacity_kwh.setter
     def system_capacity_kwh(self, size_kwh: float):
@@ -216,7 +214,7 @@ class Battery(PowerSource):
     @property
     def system_voltage_volts(self) -> float:
         """Battery bank voltage [VDC]"""
-        return self._system_model.ParamsPack.nominal_voltage
+        return self._system_model.BatteryCell.batt_Vnom
 
     @system_voltage_volts.setter
     def system_voltage_volts(self, voltage_volts: float):
@@ -262,26 +260,28 @@ class Battery(PowerSource):
         if self.dispatch is None:
             raise ValueError("No dispatch set for this battery.")
 
-        # Set stateful control value [Discharging (+) + Charging (-)]
-        if self.value("control_mode") == 1.0:
-            control = [pow_MW*1e3 for pow_MW in self.dispatch.power]    # MW -> kW
-        elif self.value("control_mode") == 0.0:
-            control = [cur_MA * 1e6 for cur_MA in self.dispatch.current]    # MA -> A
-        else:
-            raise ValueError("Stateful battery module 'control_mode' invalid value.")
-
-        time_step_duration = self.dispatch.time_duration
+        # Use manual dispatch mode for custom control
+        self._system_model.BatteryDispatch.batt_dispatch_choice = 0  # Manual dispatch
+        
+        # Set manual dispatch schedule based on dispatch solution
+        # Convert dispatch power to percentage (positive for discharge, negative for charge)
+        max_power = self.config.system_capacity_kw
+        dispatch_schedule = []
         for t in range(n_periods):
-            self.value('dt_hr', time_step_duration[t])
-            self.value(self.dispatch.control_variable, control[t])
+            power_kw = self.dispatch.power[t] * 1e3  # MW to kW
+            # Convert to percentage of max power
+            power_percent = min(100, max(0, power_kw / max_power * 100))
+            dispatch_schedule.append(power_percent)
 
-            # Only store information if passed the previous day simulations (used in clustering)
-            if sim_start_time is not None:
-                index_time_step = sim_start_time + t  # Store information
-            else:
-                index_time_step = None
+        # Extend schedule to full year if needed
+        full_schedule = [0] * 8760
+        for t in range(min(n_periods, 8760)):
+            full_schedule[t] = dispatch_schedule[t] if t < len(dispatch_schedule) else 0
 
-            self.simulate_power(time_step=index_time_step)
+        self._system_model.BatteryDispatch.dispatch_manual_percent_discharge = full_schedule
+        
+        # Run the simulation
+        self.simulate_power()
 
         # Store Dispatch model values
         if sim_start_time is not None:
@@ -313,17 +313,30 @@ class Battery(PowerSource):
 
     def update_battery_stored_values(self, time_step):
         """
-        Stores Stateful battery.outputs at time step provided.
+        Stores Battery outputs at time step provided.
 
         Args:
             time_step: time step where outputs will be stored.
         """
+        # Map output attributes to the new PySAM Battery API
+        output_mapping = {
+            'SOC': 'batt_SOC',
+            'P': 'batt_power',
+            'I': 'batt_I',
+            'V': 'batt_voltage',
+            'T': 'batt_temperature',
+            'gen': 'batt_power'  # Generation is the same as power output
+        }
+        
         for attr in self.outputs.stateful_attributes:
-            if hasattr(self._system_model.StatePack, attr) or hasattr(self._system_model.StateCell, attr):
-                getattr(self.outputs, attr)[time_step] = self.value(attr)
-            else:
-                if attr == 'gen':
-                    getattr(self.outputs, attr)[time_step] = self.value('P')
+            if attr in output_mapping:
+                pysam_attr = output_mapping[attr]
+                if hasattr(self._system_model.Outputs, pysam_attr):
+                    output_data = getattr(self._system_model.Outputs, pysam_attr)
+                    if isinstance(output_data, (tuple, list)) and len(output_data) > time_step:
+                        getattr(self.outputs, attr)[time_step] = output_data[time_step]
+                    else:
+                        getattr(self.outputs, attr)[time_step] = output_data
 
     def validate_replacement_inputs(self, project_life):
         """

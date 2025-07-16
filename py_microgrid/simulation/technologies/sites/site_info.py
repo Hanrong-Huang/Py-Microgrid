@@ -147,7 +147,11 @@ class SiteInfo(BaseClass):
             elif self.n_timesteps != n_timesteps:
                 raise ValueError(f"Wind resource timesteps of {n_timesteps} different than other resource timesteps of {self.n_timesteps}")
 
-        self.elec_prices = ElectricityPrices(data['lat'], data['lon'], data['year'], filepath=self.grid_resource_file)
+        # Only create ElectricityPrices if grid resource file is provided
+        if self.grid_resource_file:
+            self.elec_prices = ElectricityPrices(data['lat'], data['lon'], data['year'], filepath=self.grid_resource_file)
+        else:
+            self.elec_prices = None
         self.n_periods_per_day = self.n_timesteps // 365  # TODO: Does not handle leap years well
         self.interval = int((60*24)/self.n_periods_per_day)
         self.urdb_label = data['urdb_label'] if 'urdb_label' in data.keys() else None

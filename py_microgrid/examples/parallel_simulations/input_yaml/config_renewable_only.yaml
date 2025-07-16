@@ -1,0 +1,189 @@
+# PV + Wind + Battery Configuration (100% Renewable Off-Grid)
+# ================================================================================
+# SYSTEM DESCRIPTION:
+# This configuration creates a 100% renewable off-grid system with no fossil
+# fuel backup. The system relies on solar, wind, and battery storage to meet
+# all energy demands. This requires larger battery capacity for reliability.
+#
+# COMPONENTS ENABLED:
+# ✓ PV Solar Array - Primary renewable energy source (day)
+# ✓ Wind Turbines - Secondary renewable energy source (night/cloudy)
+# ✓ Battery Storage - Large capacity for multi-day backup
+# ✗ Backup Generator - Disabled (100% renewable goal)
+# ✗ Grid Connection - Disabled (off-grid system)
+#
+# USE CASES:
+# - Environmentally sensitive areas
+# - Zero-emission requirements
+# - Remote locations with good renewable resources
+# - Demonstration/research projects
+# - Areas with expensive/unreliable grid
+# ================================================================================
+
+name: renewable_battery_only
+
+# ================================================================================
+# SITE CONFIGURATION
+# ================================================================================
+site:
+  data:
+    lat: -33.5265                # Latitude (degrees) - REQUIRED
+    lon: 149.1588                # Longitude (degrees) - REQUIRED  
+    year: 2022                   # Weather data year
+  
+  # Load schedule (replace with your load file)
+  desired_schedule: "path/to/your_load_data.csv"
+  
+  # Resource configuration
+  solar: true                   # Enable solar resource (REQUIRED for PV)
+  wind: true                    # Enable wind resource (REQUIRED for wind)
+  wave: false                   # Disable wave resource
+  
+  # Site parameters for both renewables
+  hub_height: 80.0             # Wind turbine hub height (meters)
+  
+  # Resource files (auto-downloaded if not provided)
+  solar_resource_file: ""       # Will be auto-downloaded for lat/lon
+  wind_resource_file: ""        # Will be auto-downloaded for lat/lon
+
+# ================================================================================
+# TECHNOLOGY CONFIGURATIONS
+# ================================================================================
+technologies:
+
+  # PV Solar Array - PRIMARY RENEWABLE SOURCE
+  pv:
+    system_capacity_kw: 25000.0   # PV capacity (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # module_type: 1              # 1=premium silicon (21% efficiency)
+    # dc_ac_ratio: 1.4            # Higher ratio for more energy
+    # tilt: 20.0                  # Panel tilt angle (degrees)
+    # azimuth: 180.0              # Panel azimuth (180=south facing)
+    # gcr: 0.35                   # Lower GCR to reduce shading
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 1800.0     # $/kW - Lower cost for large system
+    # om_cost_per_kw_per_year: 8.0      # $/kW/year - Reduced O&M
+
+  # Wind Turbines - SECONDARY RENEWABLE SOURCE
+  wind:
+    num_turbines: 12              # Number of turbines - WILL BE OPTIMIZED
+    turbine_rating_kw: 2000       # Individual turbine rating (kW)
+    
+    # Optional advanced parameters (uncomment to customize):
+    # hub_height: 100.0           # Higher hub for more wind
+    # rotor_diameter: 90.0        # Larger rotor for low-wind performance
+    # cut_in_speed: 3.0           # Lower cut-in for more energy
+    # cut_out_speed: 25.0         # Cut-out wind speed
+    # rated_speed: 10.0           # Lower rated speed for more energy
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 2200.0     # $/kW - Reduced cost for multiple turbines
+    # om_cost_per_kw_per_year: 35.0     # $/kW/year - Reduced O&M
+
+  # Battery Storage - LARGE CAPACITY FOR BACKUP
+  battery:
+    chemistry: LFPGraphite        # Long-life chemistry for deep cycling
+    system_capacity_kwh: 30000.0  # Large battery energy (kWh) - WILL BE OPTIMIZED
+    system_capacity_kw: 8000.0    # High battery power (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # soc_min_pct: 15.0           # % - Lower minimum for more usable capacity
+    # soc_init_pct: 50.0          # % - Initial state of charge
+    # round_trip_efficiency: 90.0 # % - Higher efficiency for premium system
+    # replacement_year: 12        # years - Longer life for LFP chemistry
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 750.0      # $/kW - Economies of scale
+    # installed_cost_per_kwh: 380.0     # $/kWh - Lower cost for large battery
+    # lifecycle_cost_per_kWh_cycle: 0.02  # $/kWh-cycle - Reduced cycling cost
+
+  # Backup Generator - DISABLED
+  genset:
+    interconnect_kw: 0            # DISABLED: 100% renewable system
+
+  # Grid Connection - DISABLED
+  grid:
+    enabled: false                # DISABLED: Off-grid system
+    interconnect_kw: 0            # Not used when disabled
+
+  # Financial Configuration
+  financial:
+    Singleowner:
+      analysis_period: 25         # years - Project lifetime
+      real_discount_rate: 5.88    # % - Real discount rate
+
+# ================================================================================
+# SIMULATION CONFIGURATION  
+# ================================================================================
+config:
+  dispatch_options:
+    battery_dispatch: look_ahead  # Predictive dispatch for renewable optimization
+    grid_charging: false          # No grid available
+    pv_charging_only: false       # Allow wind to charge battery
+    solver: glpk                  # Optimization solver
+    n_look_ahead_periods: 72      # hours - Longer forecast for renewable planning
+
+  simulation_options:
+    start_year: 2022
+    end_year: 2022
+    time_steps_per_hour: 1        # Hourly simulation
+
+  optimization_options:
+    algorithm: nelder_mead        # Nelder-Mead optimization
+    max_iterations: 1500          # More iterations for complex system
+    tolerance: 1e-6
+
+# ================================================================================
+# OPTIMIZATION BOUNDS GUIDANCE
+# ================================================================================
+# When using this configuration with SystemOptimizer, set bounds as follows:
+#
+# bounds = [
+#     (15000, 60000),   # PV capacity (kW) - ACTIVE (large range for reliability)
+#     (5, 25),          # Wind turbines - ACTIVE (multiple for diversity)
+#     (20000, 80000),   # Battery energy (kWh) - ACTIVE (very large for backup)
+#     (5000, 15000),    # Battery power (kW) - ACTIVE (high power for peak demand)
+#     (0, 0)            # Genset capacity - DISABLED
+# ]
+#
+# This system will optimize all three renewable/storage components to achieve
+# 100% demand satisfaction with no fossil fuel backup. Expect higher costs
+# but zero emissions.
+# ================================================================================
+
+# ================================================================================
+# CUSTOMIZATION EXAMPLES
+# ================================================================================
+# 
+# TO IMPROVE RELIABILITY:
+# - Increase battery bounds: (30000, 100000) for battery energy
+# - Add: soc_min_pct: 10.0 under battery: section (more usable capacity)
+# - Add: n_look_ahead_periods: 96 under dispatch_options: (4-day forecast)
+#
+# TO REDUCE COSTS:
+# - Add: module_type: 0 under pv: section (standard modules)
+# - Add: installed_cost_per_kwh: 350.0 under battery: section
+# - Add: turbine_rating_kw: 1500 (smaller, cheaper turbines)
+#
+# TO OPTIMIZE FOR SPECIFIC CLIMATE:
+# - Desert (high solar): Increase PV bounds, reduce wind bounds
+# - Coastal (high wind): Increase wind bounds, reduce PV bounds  
+# - Temperate (balanced): Keep current configuration
+#
+# TO IMPROVE PERFORMANCE:
+# - Add: module_type: 1 under pv: section (premium 21% efficiency)
+# - Add: hub_height: 120.0 under wind: section (more wind resource)
+# - Add: round_trip_efficiency: 92.0 under battery: section
+#
+# FOR DIFFERENT LOAD PATTERNS:
+# - Industrial (constant): Reduce battery power bounds
+# - Residential (peaky): Increase battery power bounds
+# - Seasonal (agriculture): Increase battery energy bounds
+#
+# TO HANDLE EXTREME WEATHER:
+# - Add: cut_out_speed: 30.0 under wind: section (hurricane resistance)
+# - Add: soc_min_pct: 25.0 under battery: section (emergency reserve)
+# - Increase battery energy bounds for extended outages
+# ================================================================================

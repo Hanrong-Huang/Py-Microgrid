@@ -59,11 +59,12 @@ class HybridDispatchBuilderSolver:
         self.clustering = None
         if self.options.use_clustering:
             # TODO: Add resource data for wind
+            price_data = self.site.elec_prices.data if self.site.elec_prices is not None else []
             self.clustering = Clustering(
                 power_sources.keys(),
                 self.site.solar_resource.filename,
                 wind_resource_data=None,
-                price_data=self.site.elec_prices.data,
+                price_data=price_data,
             )
             self.clustering.n_cluster = self.options.n_clusters
             if len(self.options.clustering_weights.keys()) == 0:

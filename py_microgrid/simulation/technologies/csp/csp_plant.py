@@ -181,10 +181,11 @@ class CspPlant(PowerSource):
         n_steps_year = int(8760 * self.ssc.get('time_steps_per_hour'))
         self.ssc.set({'sf_adjust:hourly': n_steps_year * [0]})
 
-        if len(self.site.elec_prices.data) == n_steps_year: 
+        if self.site.elec_prices is not None and len(self.site.elec_prices.data) == n_steps_year: 
             self.ssc.set({'ppa_multiplier_model': 1, 'dispatch_factors_ts': self.site.elec_prices.data})
-        else:
+        elif self.site.elec_prices is not None:
             raise ValueError('Electricity prices have not been set correctly in SiteInfo.')
+        # If elec_prices is None, skip setting dispatch factors (grid disabled)
 
     def tmy3_to_df(self):
         """

@@ -1,0 +1,167 @@
+# Wind + Grid Configuration (Grid-Tied Wind Farm)
+# ================================================================================
+# SYSTEM DESCRIPTION:
+# This configuration creates a simple grid-tied wind farm. The grid provides
+# all backup power and energy storage, making this a cost-effective setup
+# for areas with good wind resources and reliable grid connection.
+#
+# COMPONENTS ENABLED:
+# ✓ Wind Turbines - Primary renewable energy source  
+# ✓ Grid Connection - Backup power and virtual storage
+# ✗ PV Solar Array - Disabled (set to 0)
+# ✗ Battery Storage - Disabled (grid provides storage)
+# ✗ Backup Generator - Disabled (grid provides backup)
+#
+# USE CASES:
+# - Utility-scale wind farms
+# - Commercial wind installations
+# - Community wind projects
+# - Wind-grid hybrid systems
+# ================================================================================
+
+name: wind_grid_connected
+
+# ================================================================================
+# SITE CONFIGURATION
+# ================================================================================
+site:
+  data:
+    lat: -33.5265                # Latitude (degrees) - REQUIRED
+    lon: 149.1588                # Longitude (degrees) - REQUIRED  
+    year: 2022                   # Weather data year
+  
+  # Load schedule (replace with your load file)
+  desired_schedule: "path/to/your_load_data.csv"
+  
+  # Resource configuration
+  solar: false                  # Disable solar resource (not needed)
+  wind: true                    # Enable wind resource (REQUIRED for wind)
+  wave: false                   # Disable wave resource
+  
+  # Wind-specific site parameters
+  hub_height: 80.0             # Wind turbine hub height (meters)
+  
+  # Resource files (auto-downloaded if not provided)
+  solar_resource_file: ""       # Not needed since solar disabled
+  wind_resource_file: ""        # Will be auto-downloaded for lat/lon
+
+# ================================================================================
+# TECHNOLOGY CONFIGURATIONS
+# ================================================================================
+technologies:
+
+  # PV Solar Array - DISABLED
+  pv:
+    system_capacity_kw: 0         # DISABLED: Set to 0
+
+  # Wind Turbines - PRIMARY ENERGY SOURCE
+  wind:
+    num_turbines: 15              # Number of turbines - WILL BE OPTIMIZED
+    turbine_rating_kw: 2000       # Individual turbine rating (kW)
+    
+    # Optional advanced parameters (uncomment to customize):
+    # hub_height: 80.0            # Hub height (meters) - higher = more wind
+    # rotor_diameter: 77.0        # Rotor diameter (meters) - affects power curve
+    # cut_in_speed: 3.5           # m/s - Minimum wind speed for operation
+    # cut_out_speed: 25.0         # m/s - Maximum wind speed for operation
+    # rated_speed: 11.0           # m/s - Wind speed at rated power
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 2500.0     # $/kW - Installation cost
+    # om_cost_per_kw_per_year: 40.0     # $/kW/year - O&M cost
+
+  # Battery Storage - DISABLED
+  battery:
+    chemistry: LFPGraphite        # Not used when capacity = 0
+    system_capacity_kwh: 0        # DISABLED: Grid provides storage
+    system_capacity_kw: 0         # DISABLED: Grid provides storage
+
+  # Backup Generator - DISABLED
+  genset:
+    interconnect_kw: 0            # DISABLED: Grid provides backup
+
+  # Grid Connection - BACKUP POWER AND STORAGE
+  grid:
+    enabled: true                 # ENABLED: Grid-tied system
+    interconnect_kw: 50000        # Grid interconnection capacity (kW)
+    
+    # Optional advanced parameters (uncomment to customize):
+    # base_import_price: 0.12     # $/kWh - Grid import price
+    # base_export_price: 0.08     # $/kWh - Wind export price (typically lower)
+    # peak_factor: 1.3            # - Peak hour price multiplier
+    # off_peak_factor: 0.7        # - Off-peak hour price multiplier
+    # peak_start: 18              # hour - Peak period start (6 PM)
+    # peak_end: 22                # hour - Peak period end (10 PM)
+
+  # Financial Configuration
+  financial:
+    Singleowner:
+      analysis_period: 25         # years - Project lifetime (wind farms)
+      real_discount_rate: 5.88    # % - Real discount rate
+
+# ================================================================================
+# SIMULATION CONFIGURATION  
+# ================================================================================
+config:
+  dispatch_options:
+    battery_dispatch: heuristic_load_following  # Not used (no battery)
+    grid_charging: false          # Not applicable (no battery to charge)
+    pv_charging_only: false       # Not applicable (no PV or battery)
+    solver: glpk                  # Optimization solver
+    n_look_ahead_periods: 48      # hours - Forecast horizon
+
+  simulation_options:
+    start_year: 2022
+    end_year: 2022
+    time_steps_per_hour: 1        # Hourly simulation
+
+  optimization_options:
+    algorithm: nelder_mead        # Nelder-Mead optimization
+    max_iterations: 1000
+    tolerance: 1e-6
+
+# ================================================================================
+# OPTIMIZATION BOUNDS GUIDANCE
+# ================================================================================
+# When using this configuration with SystemOptimizer, set bounds as follows:
+#
+# bounds = [
+#     (0, 0),           # PV capacity - DISABLED
+#     (5, 50),          # Wind turbines - ACTIVE (utility-scale range)
+#     (0, 0),           # Battery energy - DISABLED
+#     (0, 0),           # Battery power - DISABLED
+#     (0, 0)            # Genset capacity - DISABLED
+# ]
+#
+# This system will optimize only wind turbine quantity to minimize LCOE
+# while meeting demand through wind generation + grid import/export.
+# ================================================================================
+
+# ================================================================================
+# CUSTOMIZATION EXAMPLES
+# ================================================================================
+# 
+# TO REDUCE COSTS:
+# - Add: installed_cost_per_kw: 2000.0 under wind: section
+# - Add: base_import_price: 0.10 under grid: section (cheaper grid power)
+#
+# TO IMPROVE WIND PERFORMANCE:
+# - Add: hub_height: 100.0 under wind: section (taller towers)
+# - Change: turbine_rating_kw: 3000 (larger turbines)
+# - Add: cut_in_speed: 3.0 under wind: section (start at lower wind speeds)
+#
+# TO OPTIMIZE FOR GRID INTEGRATION:
+# - Add: base_export_price: 0.10 under grid: section (better export price)
+# - Adjust: interconnect_kw: 75000 (larger grid connection)
+# - Add: peak_factor: 1.5 under grid: section (higher peak prices)
+#
+# TO CHANGE WIND CHARACTERISTICS:
+# - Update lat/lon for windier location
+# - Add: hub_height: 120.0 for offshore wind
+# - Clear wind_resource_file (will auto-download for new location)
+#
+# FOR DIFFERENT TURBINE SIZES:
+# - Small turbines: turbine_rating_kw: 1000, num_turbines: 20-100
+# - Large turbines: turbine_rating_kw: 3000, num_turbines: 5-20
+# - Offshore turbines: turbine_rating_kw: 5000, hub_height: 120.0
+# ================================================================================

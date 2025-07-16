@@ -66,7 +66,8 @@ def init_hybrid_plant():
         "tz": -8,
     }
 
-    root = "C:/Users/WHamilt2/Documents/Projects/HOPP/CSP_PV_battery_dispatch_plots/"
+    # TODO: Make these paths configurable via parameters
+    root = "./data/"  # Relative path - should be configurable
     solar_file = root + "34.865371_-116.783023_psmv3_60_tmy.csv"
     prices_file = root + "constant_nom_prices.csv"
     schedule_scale = 100  # MWe
@@ -165,7 +166,8 @@ if __name__ == '__main__':
     # TODO: Update name and location if saving
     plot_dispatch_profiles = True
     save_figures = True
-    save_location_root = "C:/Users/WHamilt2/Documents/Projects/HOPP/CSP_PV_battery_dispatch_plots/50MWdc_PV/dispatch_load_constant_prices_zero_cycle_start_zero_field_generation/"
+    # TODO: Make save location configurable via parameters
+    save_location_root = "./output/"  # Relative path - should be configurable
     plotname = 'tower100_sm3_tes16_pv50_batt100_hr3_grid100'
     if plot_dispatch_profiles:
         plotname += '_dispatch'

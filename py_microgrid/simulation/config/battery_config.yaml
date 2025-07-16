@@ -10,20 +10,20 @@ battery:
     inverter_efficiency_pct: 96.0  # % - Battery inverter efficiency
     rectifier_efficiency_pct: 96.0  # % - Battery rectifier efficiency
     
-  # Cost parameters (USD)
+  # Cost parameters (USD) - These match cost_calculator.py defaults for consistency
   costs:
     lifecycle_cost_per_kWh_cycle: 0.0265  # $/kWh-cycle - Battery lifecycle cost per kWh cycle
-    installed_cost_per_kw: 840.0  # $/kW - Battery power cost
-    installed_cost_per_kwh: 420.0  # $/kWh - Battery energy cost
-    replacement_cost_per_kw: 410.0  # $/kW - Battery power replacement cost
-    replacement_cost_per_kwh: 200.0  # $/kWh - Battery energy replacement cost
+    installed_cost_per_kw: 0.0  # $/kW - Battery power cost (HOMER style: cost per kWh only)
+    installed_cost_per_kwh: 700.0  # $/kWh - Battery energy cost (matches cost_calculator.py default)
+    replacement_cost_per_kw: 0.0  # $/kW - Battery power replacement cost (HOMER style: cost per kWh only)
+    replacement_cost_per_kwh: 700.0  # $/kWh - Battery energy replacement cost
     om_cost_per_kwh_per_year: 10.0  # $/kWh/year - Battery O&M cost
     
   # Operational parameters
   operation:
     soc_min_pct: 20.0  # % - Minimum state of charge
     soc_init_pct: 50.0  # % - Initial state of charge
-    replacement_year: 10  # years - Battery replacement year
+    replacement_year: 15  # years - Battery replacement year
     operational_life_years: 15  # years - Battery operational life
     cell_resistance: 0.001  # Ohm - Cell resistance parameter
     

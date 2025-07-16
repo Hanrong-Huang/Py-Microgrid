@@ -1,7 +1,7 @@
 import numpy as np
 import pyomo.environ as pyomo
 from pyomo.environ import units as u
-import PySAM.BatteryStateful as BatteryModel
+import PySAM.Battery as BatteryModel
 import PySAM.Singleowner as Singleowner
 from typing import Optional, List, Dict
 from py_microgrid.simulation.technologies.dispatch.power_storage.simple_battery_dispatch_heuristic import (
@@ -26,7 +26,7 @@ class PredictiveDemandResponseBatteryDispatch(SimpleBatteryDispatchHeuristic):
         self,
         pyomo_model: pyomo.ConcreteModel,
         index_set: pyomo.Set,
-        system_model: BatteryModel.BatteryStateful,
+        system_model: BatteryModel.Battery,
         financial_model: Singleowner.Singleowner,
         block_set_name: str = "predictive_demand_response_battery",
         dispatch_options: Optional[Dict] = None,
@@ -37,7 +37,7 @@ class PredictiveDemandResponseBatteryDispatch(SimpleBatteryDispatchHeuristic):
         Args:
             pyomo_model (pyomo.ConcreteModel): The Pyomo optimization model.
             index_set (pyomo.Set): The set of indices for time periods.
-            system_model (BatteryModel.BatteryStateful): The battery system model.
+            system_model (BatteryModel.Battery): The battery system model.
             financial_model (Singleowner.Singleowner): The financial model.
             block_set_name (str, optional): Name for the block set. Defaults to "predictive_demand_response_battery".
             dispatch_options (Optional[dict], optional): Additional dispatch options. Defaults to None.

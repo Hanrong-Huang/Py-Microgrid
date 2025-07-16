@@ -2,7 +2,7 @@ from typing import Iterable, List, Sequence, Optional, Union, Any
 
 import numpy as np
 from attrs import define, field
-import PySAM.Grid as GridModel
+import PySAM.Grid as GensetModel
 import PySAM.Singleowner as Singleowner
 
 from py_microgrid.simulation.technologies.sites import SiteInfo
@@ -57,7 +57,7 @@ class Genset(PowerSource):
             config: dict, used to instantiate a `GridConfig` instance
             py_microgrid: HOPP system object
         """
-        system_model = GridModel.default("GenericSystemSingleOwner")
+        system_model = GensetModel.default("PVWattsSingleOwner")
 
         # parse user input for financial model
         if isinstance(self.config.fin_model, str):
@@ -69,7 +69,7 @@ class Genset(PowerSource):
 
         # default
         if financial_model is None:
-            financial_model = Singleowner.from_existing(system_model, "GenericSystemSingleOwner")
+            financial_model = Singleowner.from_existing(system_model, "PVWattsSingleOwner")
             financial_model.value("add_om_num_types", 1)
 
         super().__init__("Genset", self.site, system_model, financial_model)
@@ -77,6 +77,7 @@ class Genset(PowerSource):
         if self.config.ppa_price is not None:
             self.ppa_price = self.config.ppa_price
 
+        # Configure genset capacity limits using PySAM Grid model for consistency
         self._system_model.GridLimits.enable_interconnection_limit = 1
         self._system_model.GridLimits.grid_interconnection_limit_kwac = self.config.interconnect_kw
         self._dispatch = None
@@ -175,12 +176,12 @@ class Genset(PowerSource):
 
     @property
     def interconnect_kw(self) -> float:
-        """Interconnection limit [kW]"""
+        """Genset capacity limit [kW]"""
         return self._system_model.GridLimits.grid_interconnection_limit_kwac
 
     @interconnect_kw.setter
-    def interconnect_kw(self, interconnect_limit_kw: float):
-        self._system_model.GridLimits.grid_interconnection_limit_kwac = interconnect_limit_kw
+    def interconnect_kw(self, genset_capacity_limit_kw: float):
+        self._system_model.GridLimits.grid_interconnection_limit_kwac = genset_capacity_limit_kw
 
     @property
     def curtailment_ts_kw(self) -> list:

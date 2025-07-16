@@ -76,7 +76,7 @@ class Grid(PowerSource):
         Initialize the grid connection with dispatch factors and pricing.
         """
         # Initialize financial model
-        system_model = GridModel.default("GenericSystemSingleOwner")
+        system_model = GridModel.default("PVWattsSingleOwner")
         
         if isinstance(self.config.fin_model, str):
             financial_model = Singleowner.default(self.config.fin_model)
@@ -86,7 +86,7 @@ class Grid(PowerSource):
             financial_model = self.config.fin_model
 
         if financial_model is None:
-            financial_model = Singleowner.from_existing(system_model, "GenericSystemSingleOwner")
+            financial_model = Singleowner.from_existing(system_model, "PVWattsSingleOwner")
             financial_model.value("add_om_num_types", 1)
 
         super().__init__("Grid", self.site, system_model, financial_model)

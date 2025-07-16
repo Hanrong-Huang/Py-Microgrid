@@ -4,7 +4,7 @@ import csv
 from typing import TYPE_CHECKING, Tuple
 import numpy as np
 
-from floris.tools import FlorisInterface
+from floris import FlorisModel as FlorisInterface
 
 from py_microgrid.simulation.base import BaseClass
 from py_microgrid.simulation.technologies.sites import SiteInfo
@@ -48,8 +48,8 @@ class Floris(BaseClass):
             writer = csv.writer(fo)
             writer.writerows(save_data)
 
-        self.wind_farm_xCoordinates = self.fi.layout_x
-        self.wind_farm_yCoordinates = self.fi.layout_y
+        self.wind_farm_xCoordinates = self.fi.floris.farm.layout_x
+        self.wind_farm_yCoordinates = self.fi.floris.farm.layout_y
         self.nTurbs = len(self.wind_farm_xCoordinates)
         self.turb_rating = self.config.turbine_rating_kw
         self.wind_turbine_rotor_diameter = self.fi.floris.farm.rotor_diameters[0]
@@ -77,7 +77,7 @@ class Floris(BaseClass):
         """
         Please populate all the wind farm parameters
         """
-        self.nTurbs = len(self.fi.layout_x)
+        self.nTurbs = len(self.fi.floris.farm.layout_x)
         self.wind_turbine_powercurve_powerout = [1] * 30    # dummy for now
         pass
 
@@ -121,7 +121,7 @@ class Floris(BaseClass):
         power_turbines = np.zeros((self.nTurbs, 8760))
         power_farm = np.zeros(8760)
 
-        self.fi.reinitialize(wind_speeds=self.speeds[self.start_idx:self.end_idx], wind_directions=self.wind_dirs[self.start_idx:self.end_idx], time_series=True)
+        self.fi.reinitialize(layout_x=self.wind_farm_xCoordinates, layout_y=self.wind_farm_yCoordinates, wind_speeds=self.speeds[self.start_idx:self.end_idx], wind_directions=self.wind_dirs[self.start_idx:self.end_idx], time_series=True)
         self.fi.calculate_wake()
 
         power_turbines[:, self.start_idx:self.end_idx] = self.fi.get_turbine_powers().reshape((self.nTurbs, self.end_idx - self.start_idx))

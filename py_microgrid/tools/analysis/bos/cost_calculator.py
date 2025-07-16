@@ -170,7 +170,7 @@ def create_cost_calculator(interconnection_mw: float,
                            modify_costs: bool = False,
                            cost_reductions=dict()) -> CostCalculator:
 
-    if modify_costs:
+    if modify_costs: 
         cost_reductions['solar_capex_reduction'] = 0
         cost_reductions['wind_capex_reduction'] = 0
         cost_reductions['wind_bos_reduction'] = 0

@@ -132,7 +132,9 @@ class WindPlant(PowerSource):
 
         if self.config.hub_height is not None:
             self._system_model.Turbine.wind_turbine_hub_ht = self.config.hub_height
-        if self.config.rotor_diameter is not None:
+        if self.config.model_name == 'floris':
+            self.rotor_diameter = system_model.fi.floris.farm.rotor_diameters[0]
+        elif self.config.rotor_diameter is not None:
             self.rotor_diameter = self.config.rotor_diameter
 
     @property

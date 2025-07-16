@@ -334,10 +334,11 @@ def plot_generation_profile(hybrid: HybridSimulation,
 
     ax2 = ax1.twinx()
 
-    price = [p * hybrid.ppa_price[0] for p in hybrid.site.elec_prices.data[time_slice]]
-    ax2.plot(time, price, color=price_color, label='Price')
-    ax2.set_ylabel('Grid Price ($/kWh)', fontsize=font_size)
-    ax2.legend(fontsize=font_size-2, loc='upper right')
+    if hybrid.site.elec_prices is not None:
+        price = [p * hybrid.ppa_price[0] for p in hybrid.site.elec_prices.data[time_slice]]
+        ax2.plot(time, price, color=price_color, label='Price')
+        ax2.set_ylabel('Grid Price ($/kWh)', fontsize=font_size)
+        ax2.legend(fontsize=font_size-2, loc='upper right')
     plt.xlabel('Time (hours)', fontsize=font_size)
     plt.title('Net Generation', fontsize=font_size)
 
@@ -412,10 +413,11 @@ def plot_battery_generation(hybrid: HybridSimulation,
 
     ax2 = ax1.twinx()
 
-    price = [p * hybrid.ppa_price[0] for p in hybrid.site.elec_prices.data[time_slice]]
-    ax2.plot(time, price, color=price_color, label='Price')
-    ax2.set_ylabel('Grid Price ($/kWh)', fontsize=font_size)
-    ax2.legend(fontsize=font_size-2, loc='upper right')
+    if hybrid.site.elec_prices is not None:
+        price = [p * hybrid.ppa_price[0] for p in hybrid.site.elec_prices.data[time_slice]]
+        ax2.plot(time, price, color=price_color, label='Price')
+        ax2.set_ylabel('Grid Price ($/kWh)', fontsize=font_size)
+        ax2.legend(fontsize=font_size-2, loc='upper right')
     plt.xlabel('Time (hours)', fontsize=font_size)
     plt.title('Net Generation', fontsize=font_size)
 

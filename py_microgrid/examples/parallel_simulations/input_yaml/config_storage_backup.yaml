@@ -1,0 +1,185 @@
+# Battery + Genset Configuration (Storage + Backup Only)
+# ================================================================================
+# SYSTEM DESCRIPTION:
+# This configuration creates a system with only battery storage and backup
+# generation, with no renewable energy sources. This is useful for load 
+# shifting applications or areas where renewables are not viable.
+#
+# COMPONENTS ENABLED:
+# ✓ Battery Storage - Energy storage for load shifting/peak shaving
+# ✓ Backup Generator - Primary power source and battery charging
+# ✗ PV Solar Array - Disabled (set to 0)
+# ✗ Wind Turbines - Disabled (set to 0)
+# ✗ Grid Connection - Disabled (off-grid system)
+#
+# USE CASES:
+# - Peak shaving applications
+# - Load shifting for expensive grid power
+# - Emergency backup systems
+# - Areas with poor renewable resources
+# - Temporary power systems
+# ================================================================================
+
+name: storage_backup_only
+
+# ================================================================================
+# SITE CONFIGURATION
+# ================================================================================
+site:
+  data:
+    lat: -33.5265                # Latitude (degrees) - REQUIRED
+    lon: 149.1588                # Longitude (degrees) - REQUIRED  
+    year: 2022                   # Weather data year
+  
+  # Load schedule (replace with your load file)
+  desired_schedule: "path/to/your_load_data.csv"
+  
+  # Resource configuration
+  solar: false                  # Disable solar resource (not needed)
+  wind: false                   # Disable wind resource (not needed)
+  wave: false                   # Disable wave resource
+  
+  # Resource files (not needed for this configuration)
+  solar_resource_file: ""       # Not needed
+  wind_resource_file: ""        # Not needed
+
+# ================================================================================
+# TECHNOLOGY CONFIGURATIONS
+# ================================================================================
+technologies:
+
+  # PV Solar Array - DISABLED
+  pv:
+    system_capacity_kw: 0         # DISABLED: No renewable sources
+
+  # Wind Turbines - DISABLED
+  wind:
+    num_turbines: 0               # DISABLED: No renewable sources
+    turbine_rating_kw: 1000       # Not used when num_turbines = 0
+
+  # Battery Storage - ENERGY STORAGE FOR LOAD SHIFTING
+  battery:
+    chemistry: LFPGraphite        # Long-life chemistry for frequent cycling
+    system_capacity_kwh: 25000.0  # Large battery energy (kWh) - WILL BE OPTIMIZED
+    system_capacity_kw: 8000.0    # High battery power (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # soc_min_pct: 10.0           # % - Lower minimum for more usable capacity
+    # soc_init_pct: 50.0          # % - Initial state of charge
+    # round_trip_efficiency: 90.0 # % - High efficiency for frequent cycling
+    # replacement_year: 10        # years - Replacement schedule for heavy use
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 800.0      # $/kW - Power electronics cost
+    # installed_cost_per_kwh: 400.0     # $/kWh - Battery cell cost
+    # lifecycle_cost_per_kWh_cycle: 0.025  # $/kWh-cycle - Cycling cost
+
+  # Backup Generator - PRIMARY POWER SOURCE
+  genset:
+    interconnect_kw: 30000.0      # Genset capacity (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # minimum_load_factor: 0.4    # - Higher minimum load for efficiency
+    # efficiency: 0.40            # - Higher efficiency for modern gensets
+    # fuel_cost_per_liter: 1.20   # $/L - Fuel cost
+    # specific_co2_per_l_fuel: 2.618  # kg CO2/L - CO2 emissions
+    
+    # Cost customization (uncomment to override defaults):
+    # install_cost_per_kw: 450.0       # $/kW - Lower cost for stationary units
+    # om_cost_per_kw_per_op_hour: 0.025 # $/kW/hour - Reduced O&M for scheduled operation
+    # operational_life_hours: 20000    # hours - Longer life for well-maintained units
+
+  # Grid Connection - DISABLED
+  grid:
+    enabled: false                # DISABLED: Off-grid system
+    interconnect_kw: 0            # Not used when disabled
+
+  # Financial Configuration
+  financial:
+    Singleowner:
+      analysis_period: 20         # years - Shorter for genset-based system
+      real_discount_rate: 5.88    # % - Real discount rate
+
+# ================================================================================
+# SIMULATION CONFIGURATION  
+# ================================================================================
+config:
+  dispatch_options:
+    battery_dispatch: look_ahead  # Predictive dispatch for load shifting
+    grid_charging: false          # No grid available
+    pv_charging_only: false       # Allow genset to charge battery
+    solver: glpk                  # Optimization solver
+    n_look_ahead_periods: 48      # hours - Forecast for genset scheduling
+
+  simulation_options:
+    start_year: 2022
+    end_year: 2022
+    time_steps_per_hour: 1        # Hourly simulation
+
+  optimization_options:
+    algorithm: nelder_mead        # Nelder-Mead optimization
+    max_iterations: 1000
+    tolerance: 1e-6
+
+# ================================================================================
+# OPTIMIZATION BOUNDS GUIDANCE
+# ================================================================================
+# When using this configuration with SystemOptimizer, set bounds as follows:
+#
+# bounds = [
+#     (0, 0),           # PV capacity - DISABLED
+#     (0, 0),           # Wind turbines - DISABLED
+#     (10000, 60000),   # Battery energy (kWh) - ACTIVE (large for load shifting)
+#     (3000, 15000),    # Battery power (kW) - ACTIVE (high power for peak loads)
+#     (20000, 50000)    # Genset capacity (kW) - ACTIVE (primary power source)
+# ]
+#
+# This system will optimize battery and genset sizing to minimize operational
+# costs through load shifting and efficient generation scheduling.
+# ================================================================================
+
+# ================================================================================
+# CUSTOMIZATION EXAMPLES
+# ================================================================================
+# 
+# TO OPTIMIZE FOR LOAD SHIFTING:
+# - Add: minimum_load_factor: 0.6 under genset: section (efficient operation)
+# - Increase battery energy bounds: (20000, 100000) for more shifting capacity
+# - Add: soc_min_pct: 5.0 under battery: section (maximum usable capacity)
+#
+# TO REDUCE FUEL COSTS:
+# - Add: efficiency: 0.45 under genset: section (high-efficiency genset)
+# - Add: fuel_cost_per_liter: 1.00 under genset: section (bulk fuel pricing)
+# - Increase battery bounds to reduce genset runtime
+#
+# TO IMPROVE BATTERY PERFORMANCE:
+# - Add: round_trip_efficiency: 92.0 under battery: section
+# - Add: chemistry: "NMC" for higher energy density
+# - Add: replacement_year: 12 for longer-life batteries
+#
+# TO OPTIMIZE FOR PEAK SHAVING:
+# - Increase battery power bounds: (5000, 20000) for high peak power
+# - Add: n_look_ahead_periods: 24 for daily peak prediction
+# - Reduce battery energy bounds if only short-duration peaks
+#
+# TO REDUCE EMISSIONS:
+# - Add: efficiency: 0.42 under genset: section (reduce fuel consumption)
+# - Consider adding small renewable capacity instead of pure fossil
+# - Add: operational_life_hours: 25000 for well-maintained, efficient operation
+#
+# FOR DIFFERENT FUEL TYPES:
+# - Natural Gas: efficiency: 0.40, fuel_cost_per_liter: 0.80, co2: 2.0
+# - Propane: efficiency: 0.38, fuel_cost_per_liter: 1.50, co2: 2.3
+# - Biodiesel: efficiency: 0.35, fuel_cost_per_liter: 1.40, co2: 2.1
+#
+# FOR DIFFERENT APPLICATIONS:
+# - Peak Shaving: High battery power, moderate energy
+# - Load Shifting: High battery energy, moderate power  
+# - Emergency Backup: Moderate battery, high genset capacity
+# - UPS Application: Very high battery power, short duration
+#
+# TO HANDLE EXTREME LOADS:
+# - Add multiple gensets: increase genset capacity bounds significantly
+# - Add: minimum_load_factor: 0.3 for better turndown capability
+# - Increase battery power for transient response
+# ================================================================================

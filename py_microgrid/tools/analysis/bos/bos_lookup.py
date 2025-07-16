@@ -59,10 +59,12 @@ class BOSLookup(BOSCalculator):
 
         if np.isnan(vals).any():
             if min_distance / np.linalg.norm(search_inputs) < .05:
-                wind_bos_cost = self.data.iloc[min_index:min_index+1]["Wind BOS Cost"].values
-                solar_bos_cost = self.data.iloc[min_index:min_index+1]["Solar BOS Cost"].values
+                # Close match found - use nearest neighbor
+                wind_bos_cost = self.data.iloc[min_index:min_index+1]["Wind BOS Cost"].values[0]
+                solar_bos_cost = self.data.iloc[min_index:min_index+1]["Solar BOS Cost"].values[0]
             else:
-                raise ValueError("Inputs (Wind Size: {}MW and Solar Size: {}MW) to BOSLookup outside of range and cannot be extrapolated".format(wind_mw, solar_mw))
+                # Interpolation failed - use intelligent extrapolation
+                wind_bos_cost, solar_bos_cost = self._extrapolate_costs(wind_mw, solar_mw, interconnection_mw)
         else:
             wind_bos_cost = vals[self.desired_output_parameters.index("Wind BOS Cost")]
             solar_bos_cost = vals[self.desired_output_parameters.index("Solar BOS Cost")]
@@ -72,6 +74,103 @@ class BOSLookup(BOSCalculator):
                     format(total_bos_cost, wind_bos_cost, solar_bos_cost))
 
         return wind_bos_cost, solar_bos_cost, total_bos_cost, min_distance
+
+    def _extrapolate_costs(self, wind_mw, solar_mw, interconnection_mw):
+        """
+        Intelligently extrapolate costs when interpolation fails.
+        Uses linear extrapolation based on nearby points in the lookup table.
+        """
+        logger.info(f"Extrapolating BOS costs for Wind={wind_mw}MW, Solar={solar_mw}MW, Interconnection={interconnection_mw}MW")
+        
+        # Find points with similar interconnection capacity
+        interconnection_tolerance = 50  # MW
+        similar_interconnection = self.data[
+            abs(self.data['Interconnection Capacity'] - interconnection_mw) <= interconnection_tolerance
+        ]
+        
+        if len(similar_interconnection) == 0:
+            # No similar interconnection - use global scaling
+            return self._global_scaling_extrapolation(wind_mw, solar_mw, interconnection_mw)
+        
+        # Separate wind and solar cost extrapolation
+        wind_bos_cost = self._extrapolate_wind_cost(wind_mw, similar_interconnection)
+        solar_bos_cost = self._extrapolate_solar_cost(solar_mw, similar_interconnection)
+        
+        logger.info(f"Extrapolated costs: Wind BOS=${wind_bos_cost:.2f}, Solar BOS=${solar_bos_cost:.2f}")
+        return wind_bos_cost, solar_bos_cost
+
+    def _extrapolate_wind_cost(self, wind_mw, data_subset):
+        """Extrapolate wind BOS cost based on similar interconnection capacity data."""
+        if wind_mw == 0:
+            return 0
+        
+        # Find data points with wind capacity
+        wind_data = data_subset[data_subset['Wind Installed Capacity'] > 0]
+        if len(wind_data) < 2:
+            # Not enough data for extrapolation - use simple scaling
+            avg_cost_per_mw = wind_data['Wind BOS Cost'].mean() / wind_data['Wind Installed Capacity'].mean()
+            return wind_mw * avg_cost_per_mw
+        
+        # Linear extrapolation based on wind capacity
+        wind_capacities = wind_data['Wind Installed Capacity'].values
+        wind_costs = wind_data['Wind BOS Cost'].values
+        
+        # Use linear fit to extrapolate
+        from scipy.stats import linregress
+        slope, intercept, _, _, _ = linregress(wind_capacities, wind_costs)
+        extrapolated_cost = slope * wind_mw + intercept
+        
+        # Ensure positive result
+        return max(0, extrapolated_cost)
+
+    def _extrapolate_solar_cost(self, solar_mw, data_subset):
+        """Extrapolate solar BOS cost based on similar interconnection capacity data."""
+        if solar_mw == 0:
+            return 0
+        
+        # Find data points with solar capacity
+        solar_data = data_subset[data_subset['Solar Installed Capacity'] > 0]
+        if len(solar_data) < 2:
+            # Not enough data for extrapolation - use simple scaling
+            avg_cost_per_mw = solar_data['Solar BOS Cost'].mean() / solar_data['Solar Installed Capacity'].mean()
+            return solar_mw * avg_cost_per_mw
+        
+        # Linear extrapolation based on solar capacity
+        solar_capacities = solar_data['Solar Installed Capacity'].values
+        solar_costs = solar_data['Solar BOS Cost'].values
+        
+        # Use linear fit to extrapolate
+        from scipy.stats import linregress
+        slope, intercept, _, _, _ = linregress(solar_capacities, solar_costs)
+        extrapolated_cost = slope * solar_mw + intercept
+        
+        # Ensure positive result
+        return max(0, extrapolated_cost)
+
+    def _global_scaling_extrapolation(self, wind_mw, solar_mw, interconnection_mw):
+        """
+        Fallback extrapolation using global scaling factors from the entire dataset.
+        """
+        logger.info("Using global scaling extrapolation as fallback")
+        
+        # Calculate average cost per MW for each technology
+        wind_data = self.data[self.data['Wind Installed Capacity'] > 0]
+        solar_data = self.data[self.data['Solar Installed Capacity'] > 0]
+        
+        if len(wind_data) > 0:
+            avg_wind_cost_per_mw = wind_data['Wind BOS Cost'].mean() / wind_data['Wind Installed Capacity'].mean()
+        else:
+            avg_wind_cost_per_mw = 1000000  # Default fallback
+        
+        if len(solar_data) > 0:
+            avg_solar_cost_per_mw = solar_data['Solar BOS Cost'].mean() / solar_data['Solar Installed Capacity'].mean()
+        else:
+            avg_solar_cost_per_mw = 1000000  # Default fallback
+        
+        wind_bos_cost = wind_mw * avg_wind_cost_per_mw
+        solar_bos_cost = solar_mw * avg_solar_cost_per_mw
+        
+        return wind_bos_cost, solar_bos_cost
 
     def calculate_bos_costs(self, wind_mw, solar_mw, interconnection_mw, scenario='greenfield'):
         """

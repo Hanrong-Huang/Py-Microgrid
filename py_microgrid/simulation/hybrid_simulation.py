@@ -305,7 +305,7 @@ class HybridSimulation(BaseClass):
 
         self.outputs_factory = HybridSimulationOutput(self.technologies)
 
-        if len(self.site.elec_prices.data):
+        if self.site.elec_prices is not None and len(self.site.elec_prices.data):
             # if prices are provided, assume that they are in units of $/MWh so convert to $/KWh
             # if not true, the user should adjust the base ppa price
             self.ppa_price = 0.001

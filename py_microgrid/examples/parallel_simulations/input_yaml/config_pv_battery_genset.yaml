@@ -1,0 +1,167 @@
+# PV + Battery + Genset Configuration (Off-Grid Solar with Backup)
+# ================================================================================
+# SYSTEM DESCRIPTION:
+# This configuration creates an off-grid solar system with battery storage and
+# backup generator. This is a common setup for remote locations without grid access.
+#
+# COMPONENTS ENABLED:
+# ✓ PV Solar Array - Primary renewable energy source
+# ✓ Battery Storage - Energy storage for when sun isn't shining
+# ✓ Backup Generator - Fossil fuel backup for extended cloudy periods
+# ✗ Wind Turbines - Disabled (set to 0)
+# ✗ Grid Connection - Disabled (enabled: false)
+#
+# USE CASES:
+# - Remote mining operations
+# - Off-grid residential systems
+# - Island microgrids
+# - Emergency backup systems
+# ================================================================================
+
+name: pv_battery_genset_offgrid
+
+# ================================================================================
+# SITE CONFIGURATION
+# ================================================================================
+site:
+  data:
+    lat: -33.5265                # Latitude (degrees) - REQUIRED
+    lon: 149.1588                # Longitude (degrees) - REQUIRED  
+    year: 2022                   # Weather data year
+  
+  # Load schedule (replace with your load file)
+  desired_schedule: "path/to/your_load_data.csv"
+  
+  # Resource configuration
+  solar: true                   # Enable solar resource (REQUIRED for PV)
+  wind: false                   # Disable wind resource (not needed)
+  wave: false                   # Disable wave resource
+  
+  # Resource files (auto-downloaded if not provided)
+  solar_resource_file: ""       # Will be auto-downloaded for lat/lon
+  wind_resource_file: ""        # Not needed since wind disabled
+
+# ================================================================================
+# TECHNOLOGY CONFIGURATIONS
+# ================================================================================
+technologies:
+
+  # PV Solar Array - PRIMARY ENERGY SOURCE
+  pv:
+    system_capacity_kw: 20000.0   # PV capacity (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # module_type: 0              # 0=standard silicon (19%), 1=premium (21%), 2=thin film (18%)
+    # dc_ac_ratio: 1.3            # DC to AC ratio (1.2-1.4 typical)
+    # tilt: 20.0                  # Panel tilt angle (degrees) - site latitude ±15°
+    # azimuth: 180.0              # Panel azimuth (180=south, 90=east, 270=west)
+    # gcr: 0.4                    # Ground coverage ratio (0.3-0.5)
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 2000.0     # $/kW - Installation cost
+    # om_cost_per_kw_per_year: 10.0     # $/kW/year - O&M cost
+
+  # Wind Turbines - DISABLED
+  wind:
+    num_turbines: 0               # DISABLED: Set to 0
+    turbine_rating_kw: 1000       # Not used when num_turbines = 0
+
+  # Battery Storage - ENERGY STORAGE
+  battery:
+    chemistry: LFPGraphite        # Battery chemistry (LFPGraphite recommended)
+    system_capacity_kwh: 15000.0  # Battery energy (kWh) - WILL BE OPTIMIZED
+    system_capacity_kw: 5000.0    # Battery power (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # soc_min_pct: 20.0           # % - Minimum state of charge (depth of discharge)
+    # soc_init_pct: 50.0          # % - Initial state of charge
+    # round_trip_efficiency: 88.0 # % - Round-trip efficiency including inverter
+    # replacement_year: 10        # years - Battery replacement schedule
+    
+    # Cost customization (uncomment to override defaults):
+    # installed_cost_per_kw: 840.0      # $/kW - Power cost (inverter, controls)
+    # installed_cost_per_kwh: 420.0     # $/kWh - Energy cost (battery cells)
+
+  # Backup Generator - FOSSIL FUEL BACKUP
+  genset:
+    interconnect_kw: 25000.0      # Genset capacity (kW) - WILL BE OPTIMIZED
+    
+    # Optional advanced parameters (uncomment to customize):
+    # minimum_load_factor: 0.3    # - Minimum load (30% of rated capacity)
+    # efficiency: 0.35            # - Electrical efficiency (35%)
+    # fuel_cost_per_liter: 1.20   # $/L - Fuel cost
+    # specific_co2_per_l_fuel: 2.618  # kg CO2/L - CO2 emissions
+    
+    # Cost customization (uncomment to override defaults):
+    # install_cost_per_kw: 500.0       # $/kW - Installation cost
+    # om_cost_per_kw_per_op_hour: 0.03 # $/kW/hour - O&M cost per operating hour
+
+  # Grid Connection - DISABLED
+  grid:
+    enabled: false                # DISABLED: Off-grid system
+    interconnect_kw: 0            # Not used when disabled
+
+  # Financial Configuration
+  financial:
+    Singleowner:
+      analysis_period: 25         # years - Project lifetime
+      real_discount_rate: 5.88    # % - Real discount rate
+
+# ================================================================================
+# SIMULATION CONFIGURATION  
+# ================================================================================
+config:
+  dispatch_options:
+    battery_dispatch: heuristic_load_following  # Simple load following
+    grid_charging: false          # No grid available
+    pv_charging_only: false       # Allow genset to charge battery if needed
+    solver: glpk                  # Optimization solver
+    n_look_ahead_periods: 48      # hours - Forecast horizon
+
+  simulation_options:
+    start_year: 2022
+    end_year: 2022
+    time_steps_per_hour: 1        # Hourly simulation
+
+  optimization_options:
+    algorithm: nelder_mead        # Nelder-Mead optimization
+    max_iterations: 1000
+    tolerance: 1e-6
+
+# ================================================================================
+# OPTIMIZATION BOUNDS GUIDANCE
+# ================================================================================
+# When using this configuration with SystemOptimizer, set bounds as follows:
+#
+# bounds = [
+#     (10000, 50000),   # PV capacity (kW) - ACTIVE (large range for off-grid)
+#     (0, 0),           # Wind turbines - DISABLED
+#     (10000, 30000),   # Battery energy (kWh) - ACTIVE (large for backup)
+#     (3000, 10000),    # Battery power (kW) - ACTIVE 
+#     (15000, 35000)    # Genset capacity (kW) - ACTIVE (backup power)
+# ]
+#
+# This system will optimize PV, battery, and genset sizing to meet demand
+# with minimal cost while ensuring reliability through backup generation.
+# ================================================================================
+
+# ================================================================================
+# CUSTOMIZATION EXAMPLES
+# ================================================================================
+# 
+# TO REDUCE COSTS:
+# - Add: installed_cost_per_kw: 1500.0 under pv: section
+# - Add: fuel_cost_per_liter: 1.00 under genset: section
+#
+# TO IMPROVE PERFORMANCE:
+# - Add: module_type: 1 under pv: section (premium modules)
+# - Add: round_trip_efficiency: 92.0 under battery: section
+#
+# TO REDUCE EMISSIONS:
+# - Increase battery size bounds: (20000, 50000) for battery energy
+# - Add: minimum_load_factor: 0.5 under genset: section (more efficient operation)
+#
+# TO CHANGE LOCATION:
+# - Update lat/lon in site.data section
+# - Clear solar_resource_file (will auto-download for new location)
+# ================================================================================

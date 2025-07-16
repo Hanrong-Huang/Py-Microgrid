@@ -15,12 +15,14 @@ py_microgrid/simulation/base.py
 py_microgrid/simulation/hopp.py
 py_microgrid/simulation/hopp_interface.py
 py_microgrid/simulation/hybrid_simulation.py
+py_microgrid/simulation/config/__init__.py
+py_microgrid/simulation/config/config_manager.py
 py_microgrid/simulation/resource_files/__init__.py
 py_microgrid/simulation/resource_files/resource_data_manager.py
 py_microgrid/simulation/technologies/__init__.py
 py_microgrid/simulation/technologies/clustering.py
+py_microgrid/simulation/technologies/genset.py
 py_microgrid/simulation/technologies/grid.py
-py_microgrid/simulation/technologies/grid_original.py
 py_microgrid/simulation/technologies/power_source.py
 py_microgrid/simulation/technologies/reopt.py
 py_microgrid/simulation/technologies/run_power_losses.py
@@ -37,10 +39,9 @@ py_microgrid/simulation/technologies/csp/pySSC_daotk/ssc_wrap.py
 py_microgrid/simulation/technologies/dispatch/__init__.py
 py_microgrid/simulation/technologies/dispatch/dispatch.py
 py_microgrid/simulation/technologies/dispatch/dispatch_problem_state.py
-py_microgrid/simulation/technologies/dispatch/grid_dispatch.py
+py_microgrid/simulation/technologies/dispatch/genset_dispatch.py
 py_microgrid/simulation/technologies/dispatch/hybrid_dispatch.py
 py_microgrid/simulation/technologies/dispatch/hybrid_dispatch_builder_solver.py
-py_microgrid/simulation/technologies/dispatch/hybrid_dispatch_options - original.py
 py_microgrid/simulation/technologies/dispatch/hybrid_dispatch_options.py
 py_microgrid/simulation/technologies/dispatch/power_sources/__init__.py
 py_microgrid/simulation/technologies/dispatch/power_sources/csp_dispatch.py
@@ -126,11 +127,8 @@ py_microgrid/tools/analysis/bos/__init__.py
 py_microgrid/tools/analysis/bos/atb_lookup.py
 py_microgrid/tools/analysis/bos/bos_lookup.py
 py_microgrid/tools/analysis/bos/bos_model.py
-py_microgrid/tools/analysis/bos/calculate_installed_costs.py
 py_microgrid/tools/analysis/bos/cost_calculator.py
 py_microgrid/tools/analysis/bos/economic_calculator.py
-py_microgrid/tools/analysis/bos/hybrid_bosse.py
-py_microgrid/tools/analysis/bos/hybridbosse_client.py
 py_microgrid/tools/dispatch/__init__.py
 py_microgrid/tools/dispatch/csp_pv_battery_plot.py
 py_microgrid/tools/dispatch/plot_tools.py
@@ -143,6 +141,7 @@ py_microgrid/tools/optimization/optimization_driver.py
 py_microgrid/tools/optimization/optimization_problem.py
 py_microgrid/tools/optimization/problem_parametrization.py
 py_microgrid/tools/optimization/system_optimizer.py
+py_microgrid/tools/optimization/system_optimizer_original.py
 py_microgrid/tools/optimization/candidate_converter/__init__.py
 py_microgrid/tools/optimization/candidate_converter/candidate_converter.py
 py_microgrid/tools/optimization/candidate_converter/dict_converter.py
