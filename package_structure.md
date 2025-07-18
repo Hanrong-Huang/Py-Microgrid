@@ -3,7 +3,6 @@
 ```
 py_microgrid/                          # Main Python package
 ├── README.md                          # Project documentation
-├── CLAUDE.md                          # Claude Code instructions
 ├── LICENSE                            # Apache 2.0 license
 ├── setup.py                           # Package installation configuration
 ├── quick_start_config.yaml            # Main configuration file
@@ -137,7 +136,6 @@ py_microgrid/                          # Main Python package
 │           └── deposit_data/          # Mining site data
 │
 ├── log/                               # Application logs
-└── py_microgrid.egg-info/            # Package metadata
 ```
 
 ## Key Components - v0.2.0
