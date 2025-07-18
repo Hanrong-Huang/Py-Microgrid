@@ -181,8 +181,8 @@ jupyter notebook py_microgrid/quick_start_example.ipynb
 ```
 
 **Features:**
-- Atlanta, GA location (33.7490, -84.3880)  
-- 5-component optimization with economic dispatch
+- Download solar and wind data based on location input (lat, lon)  
+- multiple components optimization with predictive dispatch
 - Real-time genset vs grid cost comparison
 - Industrial reliability targets (95-99%)
 
@@ -193,7 +193,7 @@ jupyter notebook py_microgrid/examples/parallel_simulations/py_microgrid_example
 ```
 
 ### Configuration Examples
-- **`py_microgrid/quick_start_config.yaml`** - Simple 5-component system
+- **`py_microgrid/quick_start_config.yaml`** - Simple off-grid system
 - **`py_microgrid/examples/parallel_simulations/input_yaml/`** - Various system architectures
 
 ## Architecture - v0.2.0
