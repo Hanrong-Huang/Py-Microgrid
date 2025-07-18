@@ -13,10 +13,10 @@ battery:
   # Cost parameters (USD) - These match cost_calculator.py defaults for consistency
   costs:
     lifecycle_cost_per_kWh_cycle: 0.0265  # $/kWh-cycle - Battery lifecycle cost per kWh cycle
-    installed_cost_per_kw: 0.0  # $/kW - Battery power cost (HOMER style: cost per kWh only)
-    installed_cost_per_kwh: 700.0  # $/kWh - Battery energy cost (matches cost_calculator.py default)
-    replacement_cost_per_kw: 0.0  # $/kW - Battery power replacement cost (HOMER style: cost per kWh only)
-    replacement_cost_per_kwh: 700.0  # $/kWh - Battery energy replacement cost
+    installed_cost_per_kw: 250.0  # $/kW - Battery power cost 
+    installed_cost_per_kwh: 350.0  # $/kWh - Battery energy cost (matches cost_calculator.py default)
+    replacement_cost_per_kw: 250.0  # $/kW - Battery power replacement cost 
+    replacement_cost_per_kwh: 350.0   # $/kWh - Battery energy replacement cost
     om_cost_per_kwh_per_year: 10.0  # $/kWh/year - Battery O&M cost
     
   # Operational parameters

@@ -11,8 +11,14 @@ wind:
     
   # Cost parameters (USD)
   costs:
-    installed_cost_per_kw: 2500.0  # $/kW - Wind installed cost
-    om_cost_per_kw_per_year: 40.0  # $/kW/year - Wind O&M cost
+    installed_cost_per_kw: 2500.0  # $/kW - Wind turbine cost, include BOS
+    om_cost_per_kw_per_year: 40.0  # $/kW/year - Wind O&M cost (always used)
+    
+    # BOS costs are automatically included in HOPP's total_installed_cost
+    # Industry-standard BOS includes: foundations, electrical, grid connection, etc.
+    
+  # Wind turbine specifications
+  turbine_rating_kw: 1000.0  # kW - Individual turbine rating (used for sizing)
     
   # Operational parameters
   operation:

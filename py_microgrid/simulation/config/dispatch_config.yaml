@@ -17,7 +17,7 @@ dispatch:
     
   # Optimization parameters
   optimization:
-    max_load_reduction_percentage: 0.2  # - Maximum load reduction percentage (20%)
+    max_load_reduction_percentage: 0.2  # - Maximum load reduction percentage 
     convergence_tolerance: 1e-6  # - Convergence tolerance for optimization
     max_iterations: 1000  # - Maximum iterations for optimization
     

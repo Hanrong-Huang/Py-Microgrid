@@ -44,17 +44,72 @@ set_developer_nrel_gov_key('YOUR-API-KEY')
 - **Grid Enable/Disable**: Only Grid supports `enabled` parameter in YAML config
 - **Component Control**: Other components controlled through optimization bounds, not YAML flags
 
-## Cost Calculation System (FINAL SOLUTION)
+## Py-Microgrid v0.2.0 - Major Release Summary
 
-### Problem Resolution History
-The optimization system had significant cost calculation issues that caused incorrect LCOE results:
+### 🆕 New Features in v0.2.0 (January 2025)
+
+#### **Economic Dispatch Engine**
+- **Real-time cost comparison** between genset and grid every hour
+- **Time-of-use grid pricing**: Off-peak ($0.084/kWh), Standard ($0.12/kWh), Peak ($0.156/kWh)
+- **Economic optimization**: Grid typically preferred due to lower costs vs genset ($0.30/kWh)
+- **Automatic dispatch switching** based on real-time economics
+
+#### **YAML-Based Configuration System**
+- **All cost parameters externalized** to `py_microgrid/simulation/config/` YAML files:
+  - `pv_config.yaml` - PV installation costs, O&M, performance parameters
+  - `wind_config.yaml` - Wind turbine costs, specifications, O&M
+  - `battery_config.yaml` - Battery costs, replacement schedules, efficiency
+  - `genset_config.yaml` - Generator costs, fuel prices, emissions factors
+  - `grid_config.yaml` - Grid pricing, time-of-use factors, connection costs
+- **Easy customization** without code changes
+- **User-configurable economics** for different regions/applications
+
+#### **Industrial Reliability Standards**
+- **Realistic penalty functions** based on industrial microgrid standards (95-99% reliability)
+- **Value-of-lost-load economics** instead of academic 99.9%+ requirements
+- **Tiered penalty structure**:
+  - ≥99%: Excellent reliability - No penalty
+  - 95-99%: Acceptable reliability - Moderate penalties  
+  - <95%: Poor reliability - Significant penalties
+
+#### **Enhanced Dispatch Logic**
+- **Proper priority order**: Renewables → Battery → Economic dispatch (Genset/Grid) → Emergency backup
+- **Improved battery management**: Enhanced SOC thresholds and state management
+- **Genset optimization**: Reduced minimum turn-on from 30% to 20% for better flexibility
+- **Emergency dispatch**: Full genset capacity available for unmet demand
+
+#### **Component Improvements**
+- **Battery**: Enhanced SOC management with 10% minimum reserve and 25% genset threshold
+- **Genset**: Proper minimum load constraints and reliability-first operation
+- **Grid**: Economic dispatch with configurable time-of-use pricing
+- **PV/Wind**: YAML-based cost configuration and performance parameters
+
+### 🔧 Technical Improvements
+
+#### **System Optimizer Enhancements**
+- **Location**: `py_microgrid/tools/optimization/system_optimizer.py`
+- **Economic dispatch logic** with real-time cost comparison
+- **YAML cost integration** replacing hardcoded parameters
+- **Industrial penalty functions** for realistic reliability targets
+- **Enhanced error handling** and validation
+
+#### **Configuration Management**
+- **Centralized cost configuration** in `py_microgrid/simulation/config/`
+- **ConfigManager integration** for YAML loading and validation
+- **Parameter externalization** for easy customization
+- **Backwards compatibility** with existing configurations
+
+## Previous Cost Calculation System (Pre-v0.2.0)
+
+### Problem Resolution History (Legacy)
+The original optimization system had significant cost calculation issues:
 
 1. **Root Cause**: Original system used BOSLookup.csv but failed with "outside of range" errors for large systems
 2. **Initial Fix**: Switched to CostPerMW with artificial multipliers (5.7x cost + 50x fuel)
 3. **Issue**: Multipliers caused LCOE to overshoot target ($0.5566/kWh vs $0.3067/kWh target)
 4. **Alternative**: Enhanced BOSLookup with intelligent extrapolation → LCOE too low ($0.0894/kWh)
 5. **Root Cause Discovery**: Original system used HOPP's built-in `total_installed_cost` (includes BOS costs automatically)
-6. **Final Solution**: Return to HOPP's built-in cost calculations (December 2024)
+6. **v0.2.0 Solution**: YAML-based cost configuration with economic dispatch (January 2025)
 
 ### Current Implementation: Original HOPP Method
 **Location**: `py_microgrid/tools/optimization/system_optimizer.py`
@@ -104,30 +159,39 @@ Run the original method test to verify the approach works:
 python test_original_method.py
 ```
 
-## Development Commands
+## Development Commands - v0.2.0
 
 ### Running Simulations
 ```bash
-# Run quick start example
-python py_microgrid/quick_start_example.ipynb
+# Run quick start example (updated for v0.2.0)
+jupyter notebook py_microgrid/quick_start_example.ipynb
 
-# Run parallel simulation example
-python py_microgrid/examples/parallel_simulations/py_microgrid_example/simulation_chunk_0.ipynb
+# Run multi-location example (new in v0.2.0)
+jupyter notebook py_microgrid/examples/parallel_simulations/py_microgrid_example/multiple_locations_example.ipynb
 
-# Test optimization with cost validation
-python test_final_optimization.py
+# Test economic dispatch and YAML configuration
+python -c "from py_microgrid.tools.optimization.system_optimizer import SystemOptimizer; print('v0.2.0 imports working')"
 ```
 
-### Configuration Management
+### Configuration Management - v0.2.0
 ```python
-# Load and modify YAML configuration
+# Load and modify YAML configuration (enhanced in v0.2.0)
 from py_microgrid.utilities import ConfigManager
 config_manager = ConfigManager()
-config = config_manager.load_yaml_safely(yaml_file_path)
 
-# Only Grid supports enabled/disabled
-config['technologies']['grid']['enabled'] = False
-config_manager.save_yaml_safely(config, yaml_file_path)
+# Main system configuration
+config = config_manager.load_yaml_safely('py_microgrid/quick_start_config.yaml')
+
+# Cost configuration (new in v0.2.0)
+pv_costs = config_manager.load_yaml_safely('py_microgrid/simulation/config/pv_config.yaml')
+grid_costs = config_manager.load_yaml_safely('py_microgrid/simulation/config/grid_config.yaml')
+
+# Modify economic parameters
+grid_costs['grid']['pricing']['base_import_price'] = 0.15  # $/kWh
+config['technologies']['grid']['enabled'] = True  # Enable economic dispatch
+
+# Save modified configurations
+config_manager.save_yaml_safely(grid_costs, 'py_microgrid/simulation/config/grid_config.yaml')
 ```
 
 ### Testing and Validation

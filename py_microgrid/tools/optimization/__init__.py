@@ -7,3 +7,4 @@ from .data_logging.table_data_recorder import TableDataRecorder
 from .command_line_tools.run_utils import setup_run
 from .load_analyzer import LoadAnalyzer
 from .system_optimizer import SystemOptimizer
+from .economic_calculator import EconomicCalculator

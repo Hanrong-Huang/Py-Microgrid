@@ -116,8 +116,14 @@ class SiteInfo(BaseClass):
             self.vertices = np.array([np.array(v) for v in data['site_boundaries']['verts']])
             self.polygon = Polygon(self.vertices)
             self.polygon = self.polygon.buffer(1e-8)
-        if 'kml_file' in data:
+        elif 'kml_file' in data:
             self.kml_data, self.polygon, data['lat'], data['lon'] = self.kml_read(data['kml_file'])
+            self.polygon = self.polygon.buffer(1e-8)
+        else:
+            # Default polygon when no site boundaries or KML file is provided
+            # Create a simple square polygon centered at origin (1km x 1km)
+            self.vertices = np.array([[-500, -500], [500, -500], [500, 500], [-500, 500]])
+            self.polygon = Polygon(self.vertices)
             self.polygon = self.polygon.buffer(1e-8)
 
         if 'lat' not in data or 'lon' not in data:

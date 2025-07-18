@@ -5,24 +5,26 @@
 genset:
   # Cost parameters (USD)
   costs:
-    install_cost_per_kw: 500.0  # $/kW - Genset installation cost
-    replacement_cost_per_kw: 500.0  # $/kW - Genset replacement cost
+    install_cost_per_kw: 650.0  # $/kW - Genset installation cost, include BOS
+    replacement_cost_per_kw: 650.0  # $/kW - Genset replacement cost, include BOS
     om_cost_per_kw_per_op_hour: 0.03  # $/kW/hour - Genset O&M cost per operating hour
     fuel_cost_per_liter: 1.20  # $/L - Fuel cost per liter (original value)
+    start_cost: 10.0  # $ - Cost to start the genset
     
   # Performance parameters
   performance:
     specific_fuel_consumption_l_per_kwh: 0.250  # L/kWh - Fuel consumption rate
     operational_life_hours: 15000  # hours - Genset operational life
     efficiency: 0.35  # - Genset electrical efficiency
-    minimum_load_factor: 0.3  # - Minimum load factor (30% of rated capacity)
+    minimum_load_factor: 0.30  # - Minimum load factor (30% of rated capacity)
     
   # Environmental parameters
   environment:
     specific_co2_per_l_fuel: 2.618  # kg CO2/L - CO2 emissions per liter of fuel
     specific_nox_per_l_fuel: 0.0123  # kg NOx/L - NOx emissions per liter of fuel
     specific_sox_per_l_fuel: 0.0024  # kg SOx/L - SOx emissions per liter of fuel
-    carbon_cost_per_tonne: 50.0  # Cost in $ for every tonne of CO2 emitted
+    carbon_cost_per_tonne: 10.0  # Cost in $ for every tonne of CO2 emitted, set to zero if this does not apply to your region
+    
   # Operational parameters
   operation:
     start_up_time: 0.25  # hours - Start-up time

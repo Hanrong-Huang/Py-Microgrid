@@ -1,27 +1,35 @@
-# Py-Microgrid
+# Py-Microgrid v0.2.0
 
 A Python-based microgrid simulation and optimization framework for hybrid renewable energy systems, built on the HOPP (Hybrid Optimization and Performance Platform) framework.
 
 ## Overview
 
-Py-Microgrid enables users to design, simulate, and optimize hybrid renewable energy systems with a flexible 5-component architecture:
+Py-Microgrid enables users to design, simulate, and optimize hybrid renewable energy systems with a flexible 5-component architecture and advanced economic dispatch capabilities:
 
 1. **PV** - Solar photovoltaic panels
-2. **Wind** - Wind turbines
+2. **Wind** - Wind turbines  
 3. **Battery** - Energy storage systems
 4. **Genset** - Backup generators (diesel/natural gas)
-5. **Grid** - Electrical grid connection
+5. **Grid** - Electrical grid connection with time-of-use pricing
 
-## Key Features
+## Key Features - v0.2.0
 
+### 🆕 New in v0.2.0
+- **Economic Dispatch**: Real-time cost-based dispatch between genset and grid
+- **YAML-Based Configuration**: All costs and parameters externalized to config files
+- **Industrial Penalty Functions**: Realistic reliability targets (95-99%) with value-of-lost-load economics
+- **Time-of-Use Grid Pricing**: Dynamic pricing with off-peak, standard, and peak rates
+- **Enhanced Genset Logic**: Improved minimum load constraints and reliability-first dispatch
+- **Proper Priority Dispatch**: Renewables → Battery → Economic dispatch (Genset/Grid) → Emergency backup
+
+### 🔧 Core Features
 - **5-Component Architecture**: Clear separation between backup generators (genset) and grid connection
-- **Nelder-Mead Optimization**: Advanced optimization algorithms using scipy.optimize for cost-effective system sizing
-- **Hardcoded Economic Parameters**: Configurable discount rates (5.88%), project lifetime (25 years), and cost assumptions
-- **Resource Integration**: Automatic download of solar and wind resource data via NREL and NASA APIs
-- **Fixed Grid Initialization**: Resolved critical grid initialization bugs for stable simulation runs
-- **Economic Analysis**: Comprehensive economic evaluation including LCOE, NPC, CO2 emissions, and lifecycle costs
-- **Flexible Load Management**: Up to 20% demand reduction capabilities
-- **Multi-Location Processing**: Batch analysis for multiple sites with parallel simulation support
+- **Nelder-Mead Optimization**: Advanced optimization algorithms using scipy.optimize
+- **YAML Configuration System**: Externalized parameters in `py_microgrid/simulation/config/`
+- **Resource Integration**: Automatic download of solar and wind resource data via NREL APIs
+- **Economic Analysis**: LCOE, NPC, CO2 emissions, and lifecycle cost calculations
+- **Flexible Load Management**: Configurable demand response capabilities
+- **Multi-Location Processing**: Batch analysis for multiple sites
 
 ## Installation
 
@@ -42,12 +50,6 @@ pip install -e .
 1. **Python Version**: Python 3.10 or 3.11 required
 
 2. **HOPP (Hybrid Optimization and Performance Platform)**
-   ```bash
-   git clone https://github.com/NREL/HOPP.git
-   cd HOPP
-   pip install -e .
-   ```
-   Or install directly via pip:
    ```bash
    pip install HOPP
    ```
@@ -72,165 +74,199 @@ set_developer_nrel_gov_key('YOUR-API-KEY')
 ### 2. Basic Usage
 
 ```python
-# Import fixed optimizer that preserves original structure but fixes grid bug
-from py_microgrid.tools.optimization.fixed_system_optimizer import SystemOptimizer
-from py_microgrid.tools.analysis.bos import EconomicCalculator
+from py_microgrid.tools.optimization.system_optimizer import SystemOptimizer
+from py_microgrid.tools.optimization.economic_calculator import EconomicCalculator
 
-# Initialize components with hardcoded economic parameters
+# Initialize with configurable economic parameters
 economic_calculator = EconomicCalculator(
-    discount_rate=0.0588,    # 5.88% discount rate (hardcoded)
-    project_lifetime=25      # 25 year project lifetime (hardcoded)
+    discount_rate=0.0588,    # 5.88% discount rate
+    project_lifetime=25      # 25 year project lifetime
 )
 
 optimizer = SystemOptimizer(
-    yaml_file_path='py_microgrid/examples/quick_start_config.yaml',
+    yaml_file_path='py_microgrid/quick_start_config.yaml',
     economic_calculator=economic_calculator,
-    enable_flexible_load=True,      # Enable 20% load reduction
+    enable_flexible_load=True,
     max_load_reduction_percentage=0.2
 )
 
-# Define optimization bounds for 5 components (hardcoded)
+# Define optimization bounds for 5 components
 bounds = [
     (5000, 50000),    # PV capacity (kW)
-    (1, 50),          # Wind turbines (1MW each)
-    (5000, 30000),    # Battery energy capacity (kWh)
-    (1000, 10000),    # Battery power capacity (kW)
-    (17000, 30000)    # Genset capacity (kW) - backup generator
+    (5, 50),          # Wind turbines (1MW each)
+    (5000, 30000),    # Battery capacity (kWh)
+    (1000, 10000),    # Battery power (kW)
+    (5000, 20000)     # Genset capacity (kW)
 ]
 
-# Define initial conditions (10% of range)
-initial_conditions = [
-    [bound[0] + (bound[1] - bound[0]) * 0.1 for bound in bounds]
-]
-
-# Run Nelder-Mead optimization
+# Run optimization
 result = optimizer.optimize_system(bounds, initial_conditions)
 
-# Print results
-if result:
-    print(f"PV Capacity: {result['PV Capacity (kW)']:.2f} kW")
-    print(f"LCOE: ${result['System LCOE ($/kWh)']:.4f}/kWh")
-    print(f"System Cost: ${result['System NPC ($)']:,.2f}")
+# Results include economic dispatch analysis
+print(f"PV Capacity: {result['PV Capacity (kW)']:.2f} kW")
+print(f"LCOE: ${result['System LCOE ($/kWh)']:.4f}/kWh")
+print(f"Demand Met: {result['Demand Met Percentage']:.1f}%")
 ```
 
 ### 3. Configuration Structure
 
-**IMPORTANT**: Only the `grid` component supports the `enabled` parameter. Other components (PV, Wind, Battery, Genset) are controlled through the optimization bounds.
-
+**Grid Component** (only component with enable/disable):
 ```yaml
 technologies:
-  pv:
-    system_capacity_kw: 9500.0
-    
-  wind:
-    num_turbines: 6
-    turbine_rating_kw: 1000
-    
-  battery:
-    chemistry: LFPGraphite
-    system_capacity_kw: 1900.0
-    system_capacity_kwh: 8000.0
-    
-  genset:
-    interconnect_kw: 18300.0
-    
   grid:
-    enabled: true  # Only grid supports enabled/disabled
+    enabled: true  # Enable grid for economic dispatch
     interconnect_kw: 10000
 ```
 
-### 4. Working Notebooks
+**Other Components** (controlled through optimization bounds):
+```yaml
+technologies:
+  pv:
+    system_capacity_kw: 25000.0
+    
+  wind:
+    num_turbines: 8
+    turbine_rating_kw: 1000
+    
+  battery:
+    system_capacity_kw: 5000.0
+    system_capacity_kwh: 15000.0
+    
+  genset:
+    interconnect_kw: 10000.0
+```
 
-Both example notebooks have been fixed and are ready to use:
+## Configuration System - v0.2.0
 
-- **Quick Start**: `py_microgrid/quick_start_example.ipynb`
-- **Parallel Simulation**: `py_microgrid/examples/parallel_simulations/py_microgrid_example/simulation_chunk_0.ipynb`
+All costs and operational parameters are now externalized to YAML files in `py_microgrid/simulation/config/`:
+
+### Cost Configuration Files
+- **`pv_config.yaml`** - PV installation costs, O&M costs, performance parameters
+- **`wind_config.yaml`** - Wind turbine costs, O&M costs, turbine specifications  
+- **`battery_config.yaml`** - Battery costs, replacement schedules, efficiency parameters
+- **`genset_config.yaml`** - Generator costs, fuel prices, emissions factors, O&M costs
+- **`grid_config.yaml`** - Grid pricing, time-of-use factors, connection costs
+- **`dispatch_config.yaml`** - Optimization parameters, dispatch priorities
+
+### Economic Dispatch Configuration
+
+**Grid Pricing** (`grid_config.yaml`):
+```yaml
+grid:
+  pricing:
+    base_import_price: 0.12  # $/kWh base rate
+    
+  dispatch_factors:
+    off_peak_factor: 0.7     # 0-6 AM: $0.084/kWh
+    standard_factor: 1.0     # Standard: $0.12/kWh  
+    peak_factor: 1.3         # 6-10 PM: $0.156/kWh
+```
+
+**Genset Economics** (`genset_config.yaml`):
+```yaml
+genset:
+  costs:
+    fuel_cost_per_liter: 1.20           # $/L
+  performance:
+    specific_fuel_consumption_l_per_kwh: 0.25  # L/kWh
+  # Results in ~$0.30/kWh marginal cost
+```
 
 ## Examples
 
 ### Quick Start Example
-
-The fastest way to get started is with the simplified quick start example:
-
 ```python
 # Run the quick start notebook
 jupyter notebook py_microgrid/quick_start_example.ipynb
 ```
 
-This example uses:
-- **Configuration**: `examples/quick_start_config.yaml` - Simplified 5-component configuration
-- **Location**: Atlanta, GA (33.7490, -84.3880)
-- **System**: Off-grid demonstration with all components except grid connection
+**Features:**
+- Atlanta, GA location (33.7490, -84.3880)  
+- 5-component optimization with economic dispatch
+- Real-time genset vs grid cost comparison
+- Industrial reliability targets (95-99%)
 
-### Complete Example
-
-See `py_microgrid/examples/parallel_simulations/py_microgrid_example/simulation_chunk_0.ipynb` for a complete working example including:
-- Resource data download
-- System configuration
-- Optimization execution
-- Results analysis
+### Multi-Location Example
+```python
+# Run parallel simulations
+jupyter notebook py_microgrid/examples/parallel_simulations/py_microgrid_example/multiple_locations_example.ipynb
+```
 
 ### Configuration Examples
+- **`py_microgrid/quick_start_config.yaml`** - Simple 5-component system
+- **`py_microgrid/examples/parallel_simulations/input_yaml/`** - Various system architectures
 
-- **Quick Start**: `examples/quick_start_config.yaml` - Simplified configuration for learning
-- **Basic Configuration**: `examples/parallel_simulations/input_yaml/input_file_chunk_0.yaml`
-- **Minimal Configuration**: `examples/parallel_simulations/input_yaml/input_file_minimal_example.yaml`
+## Architecture - v0.2.0
 
-## Bug Fixes and Improvements
+### Enhanced Dispatch Logic
 
-### Critical Fixes Applied
+**Priority Order:**
+1. **Renewables First** - PV and Wind generation used first
+2. **Battery Dispatch** - Based on SOC thresholds and available capacity  
+3. **Economic Dispatch** - Real-time cost comparison between genset and grid:
+   - Off-peak hours: Grid preferred ($0.084/kWh vs $0.30/kWh genset)
+   - Peak hours: Cost-dependent dispatch ($0.156/kWh grid vs $0.30/kWh genset)
+4. **Emergency Backup** - Full genset capacity for unmet demand
 
-1. **Grid Initialization Bug**: Fixed 'NoneType' object errors by creating `FixedSystemOptimizer`
-2. **YAML Configuration**: Corrected 'enabled' parameter usage (only for Grid component)
-3. **API Key Timing**: Resolved NREL API key initialization issues
-4. **Unicode Handling**: Fixed character encoding issues in console output
-5. **Resource File Paths**: Normalized file path separators for cross-platform compatibility
+### Component Specifications
 
-### Enhanced Features
+| Component | v0.2.0 Enhancements | Configuration |
+|-----------|-------------------|---------------|
+| **PV** | YAML-based costs, performance parameters | `pv_config.yaml` |
+| **Wind** | Turbine specifications, cost parameters | `wind_config.yaml` |
+| **Battery** | SOC management, replacement schedules | `battery_config.yaml` |
+| **Genset** | Economic dispatch, minimum load logic | `genset_config.yaml` |
+| **Grid** | Time-of-use pricing, economic dispatch | `grid_config.yaml` |
 
-- **Preserved Original Structure**: All original algorithms and notebook structures maintained
-- **Nelder-Mead Optimization**: Original scipy.optimize implementation preserved
-- **Hardcoded Economics**: Original economic parameters and calculations maintained
-- **Working Notebooks**: Both example notebooks now run without errors
+### Reliability & Economics
 
-## Configuration Parameters
+**Industrial Reliability Targets:**
+- **≥99%**: Excellent reliability - No penalty
+- **95-99%**: Acceptable reliability - Moderate penalties
+- **<95%**: Poor reliability - Significant penalties based on value of lost load
 
-The system uses externalized configuration files located in `py_microgrid/simulation/config/`:
+**Economic Dispatch:**
+- Real-time cost comparison every hour
+- Grid typically preferred due to lower cost
+- Genset used during peak hours or grid outages
+- Configurable pricing through YAML files
 
-- `battery_config.yaml` - Battery efficiency, costs, and operational parameters
-- `pv_config.yaml` - PV efficiency, costs, and performance parameters
-- `wind_config.yaml` - Wind performance, costs, and operational parameters
-- `genset_config.yaml` - Generator costs, performance, and environmental parameters
-- `grid_config.yaml` - Grid pricing, dispatch factors, and connection parameters
-- `dispatch_config.yaml` - Optimization and dispatch control parameters
+## Working Examples
 
-## Architecture
+All example notebooks have been updated for v0.2.0:
 
-### Component Overview
+- **Quick Start**: `py_microgrid/quick_start_example.ipynb` ✅
+- **Multi-Location**: `py_microgrid/examples/parallel_simulations/py_microgrid_example/multiple_locations_example.ipynb` ✅
 
-| Component | Description | Purpose |
-|-----------|-------------|---------|
-| **PV** | Solar photovoltaic panels | Clean energy generation |
-| **Wind** | Wind turbines | Clean energy generation |
-| **Battery** | Energy storage system | Energy storage and dispatch |
-| **Genset** | Backup generator | Backup power generation |
-| **Grid** | Electrical grid connection | Import/export power |
+## What's New in v0.2.0
 
-### Key Improvements
+### Major Enhancements
+1. **Economic Dispatch Engine**: Real-time cost-based decisions between genset and grid
+2. **YAML Configuration System**: All parameters externalized for easy customization
+3. **Industrial Reliability Standards**: Realistic penalty functions based on industrial microgrids
+4. **Enhanced Genset Logic**: Proper minimum load constraints and reliability-first operation
+5. **Time-of-Use Grid Pricing**: Dynamic pricing with off-peak, standard, and peak rates
 
-- **Clear Separation**: Genset (backup generator) vs Grid (electrical connection)
-- **Flexible Control**: Individual component enable/disable flags
-- **Configurable Parameters**: Easy customization without code changes
-- **Simplified Input**: Load schedules can be loaded from CSV files
-- **Backwards Compatible**: Existing configurations continue to work
+### Bug Fixes
+1. **Genset Dispatch Priority**: Fixed to follow industrial best practices
+2. **Battery SOC Management**: Improved state-of-charge thresholds and logic
+3. **Grid Integration**: Proper economic comparison with genset costs
+4. **Penalty Functions**: Realistic industrial reliability targets (not academic 99.9%+)
+
+### Configuration Improvements
+1. **Cost Parameters**: All costs moved to YAML files for easy modification
+2. **Dispatch Logic**: Configurable dispatch priorities and thresholds
+3. **Grid Pricing**: Comprehensive time-of-use pricing structure
+4. **Component Parameters**: Externalized performance and operational parameters
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Update configuration files in `py_microgrid/simulation/config/` as needed
+5. Test with example notebooks
+6. Submit a pull request
 
 ## License
 
@@ -242,7 +278,6 @@ For questions, issues, or contributions, please visit the [GitHub repository](ht
 
 ## Acknowledgments
 
-- NREL for providing renewable energy resource data APIs
-- The open-source community for foundational tools and libraries
-- Contributors to the hybrid energy system modeling domain
-
+- NREL for providing renewable energy resource data APIs and HOPP framework
+- The industrial microgrid community for real-world operational insights  
+- Contributors to hybrid energy system modeling and economic dispatch optimization

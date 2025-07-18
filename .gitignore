@@ -1,0 +1,86 @@
+# Py-Microgrid v0.2.0 - Git Ignore File
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+microgrid-wsl/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Py-Microgrid specific files
+# Log files
+log/
+*.log
+
+# Resource data files (auto-downloaded)
+py_microgrid/simulation/resource_files/*.csv
+py_microgrid/simulation/resource_files/*.srw
+
+# Simulation results
+simulation_results/
+optimization_results_*.csv
+*.pkl
+
+# Temporary test files
+test_*.py
+temp_*.py
+
+# API keys (security)
+api_keys.txt
+keys.yaml
+.env.local
+
+# Large data files
+*.h5
+*.hdf5
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# BOS legacy files (deprecated in v0.2.0)
+py_microgrid/tools/analysis/bos/
+
+# Backup files
+*.bak
+*.backup
+*~

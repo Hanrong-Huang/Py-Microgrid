@@ -1,21 +1,21 @@
-# PV + Battery + Genset Configuration (Off-Grid Solar with Backup)
+# Py-Microgrid v0.2.0 - PV + Battery + Genset Configuration
 # ================================================================================
 # SYSTEM DESCRIPTION:
-# This configuration creates an off-grid solar system with battery storage and
-# backup generator. This is a common setup for remote locations without grid access.
+# Off-grid solar system with battery storage and backup generator.
+# Updated for v0.2.0 with YAML-based cost configuration and economic dispatch.
 #
 # COMPONENTS ENABLED:
 # ✓ PV Solar Array - Primary renewable energy source
-# ✓ Battery Storage - Energy storage for when sun isn't shining
-# ✓ Backup Generator - Fossil fuel backup for extended cloudy periods
+# ✓ Battery Storage - Energy storage with enhanced SOC management
+# ✓ Backup Generator - Enhanced dispatch logic with minimum load constraints
 # ✗ Wind Turbines - Disabled (set to 0)
 # ✗ Grid Connection - Disabled (enabled: false)
 #
-# USE CASES:
-# - Remote mining operations
-# - Off-grid residential systems
-# - Island microgrids
-# - Emergency backup systems
+# v0.2.0 FEATURES:
+# - All costs configured in py_microgrid/simulation/config/ YAML files
+# - Industrial reliability targets (95-99%) 
+# - Enhanced genset dispatch with proper minimum load logic
+# - Improved battery SOC management
 # ================================================================================
 
 name: pv_battery_genset_offgrid
@@ -57,9 +57,9 @@ technologies:
     # azimuth: 180.0              # Panel azimuth (180=south, 90=east, 270=west)
     # gcr: 0.4                    # Ground coverage ratio (0.3-0.5)
     
-    # Cost customization (uncomment to override defaults):
-    # installed_cost_per_kw: 2000.0     # $/kW - Installation cost
-    # om_cost_per_kw_per_year: 10.0     # $/kW/year - O&M cost
+    # Cost parameters now configured in: py_microgrid/simulation/config/pv_config.yaml
+    # - installed_cost_per_kw: Installation cost per kW
+    # - om_cost_per_kw_per_year: Annual O&M cost per kW
 
   # Wind Turbines - DISABLED
   wind:
@@ -78,9 +78,10 @@ technologies:
     # round_trip_efficiency: 88.0 # % - Round-trip efficiency including inverter
     # replacement_year: 10        # years - Battery replacement schedule
     
-    # Cost customization (uncomment to override defaults):
-    # installed_cost_per_kw: 840.0      # $/kW - Power cost (inverter, controls)
-    # installed_cost_per_kwh: 420.0     # $/kWh - Energy cost (battery cells)
+    # Cost parameters now configured in: py_microgrid/simulation/config/battery_config.yaml
+    # - installed_cost_per_kw: Power electronics cost (inverter, controls) 
+    # - installed_cost_per_kwh: Energy storage cost (battery cells)
+    # - replacement_cost_per_kwh: Battery replacement cost
 
   # Backup Generator - FOSSIL FUEL BACKUP
   genset:
@@ -92,20 +93,21 @@ technologies:
     # fuel_cost_per_liter: 1.20   # $/L - Fuel cost
     # specific_co2_per_l_fuel: 2.618  # kg CO2/L - CO2 emissions
     
-    # Cost customization (uncomment to override defaults):
-    # install_cost_per_kw: 500.0       # $/kW - Installation cost
-    # om_cost_per_kw_per_op_hour: 0.03 # $/kW/hour - O&M cost per operating hour
+    # Cost parameters now configured in: py_microgrid/simulation/config/genset_config.yaml
+    # - install_cost_per_kw: Installation cost per kW
+    # - fuel_cost_per_liter: Fuel cost per liter  
+    # - om_cost_per_kw_per_op_hour: O&M cost per operating hour
+    # - specific_co2_per_l_fuel: CO2 emissions per liter fuel
 
   # Grid Connection - DISABLED
   grid:
     enabled: false                # DISABLED: Off-grid system
     interconnect_kw: 0            # Not used when disabled
 
-  # Financial Configuration
+  # Financial parameters
   financial:
-    Singleowner:
-      analysis_period: 25         # years - Project lifetime
-      real_discount_rate: 5.88    # % - Real discount rate
+    project_lifetime: 25
+    discount_rate: 5.88
 
 # ================================================================================
 # SIMULATION CONFIGURATION  

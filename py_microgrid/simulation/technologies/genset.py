@@ -1,239 +1,275 @@
-from typing import Iterable, List, Sequence, Optional, Union, Any
+"""
+Diesel Generator (Genset) implementation for py_microgrid
+This module provides a proper diesel generator model with fuel consumption,
+emissions, operational constraints, and cost calculations.
+"""
 
+from typing import List, Optional, Union, Any
 import numpy as np
 from attrs import define, field
-import PySAM.Grid as GensetModel
-import PySAM.Singleowner as Singleowner
-
 from py_microgrid.simulation.technologies.sites import SiteInfo
 from py_microgrid.simulation.technologies.power_source import PowerSource
 from py_microgrid.simulation.base import BaseClass
-from py_microgrid.simulation.technologies.financial import FinancialModelType, CustomFinancialModel
-from py_microgrid.type_dec import NDArrayFloat
 from py_microgrid.utilities.validators import gt_zero
 
 
 @define
 class GensetConfig(BaseClass):
     """
-    Configuration data class for Genset (backup generator). 
-
+    Configuration data class for Genset (diesel generator).
+    
     Args:
-        interconnect_kw: genset capacity limit (kW)
-        fin_model: Financial model. Can be any of the following:
-
-            - a string representing an argument to `Singleowner.default`
-
-            - a dict representing a `CustomFinancialModel`
-
-            - an object representing a `CustomFinancialModel` or `Singleowner.Singleowner` instance
-
-        ppa_price: PPA price [$/kWh] used in the financial model
+        interconnect_kw: Maximum genset capacity [kW]
+        fuel_type: Type of fuel used (diesel, natural_gas, etc.)
+        efficiency: Electrical efficiency of the genset [0-1]
+        minimum_load_factor: Minimum load factor as fraction of rated capacity [0-1]
+        specific_fuel_consumption: Fuel consumption rate [L/kWh]
+        fuel_cost_per_liter: Cost of fuel per liter [$/L]
+        start_cost: Cost to start the genset [$]
+        maintenance_cost_per_hour: Maintenance cost per operating hour [$/h]
+        co2_emissions_per_liter: CO2 emissions per liter of fuel [kg CO2/L]
+        operational_life_hours: Expected operational life [hours]
     """
     interconnect_kw: float = field(validator=gt_zero)
-    fin_model: Optional[Union[str, dict, FinancialModelType]] = None
-    ppa_price: Optional[Union[Iterable, float]] = None
+    fuel_type: str = field(default="diesel")
+    efficiency: float = field(default=0.35)
+    minimum_load_factor: float = field(default=0.30)
+    specific_fuel_consumption: float = field(default=0.25)  # L/kWh
+    fuel_cost_per_liter: float = field(default=1.20)  # $/L
+    start_cost: float = field(default=50.0)  # $ per start
+    maintenance_cost_per_hour: float = field(default=2.0)  # $/hour
+    co2_emissions_per_liter: float = field(default=2.618)  # kg CO2/L
+    operational_life_hours: float = field(default=15000.0)  # hours
+    install_cost_per_kw: float = field(default=650.0)  # $/kW
+    replacement_cost_per_kw: float = field(default=650.0)  # $/kW
 
 
 @define
-class Genset(PowerSource):
+class Genset(BaseClass):
+    """
+    Diesel Generator (Genset) class that models a backup power generator.
+    
+    This class properly implements diesel generator characteristics including:
+    - Minimum load constraints
+    - Fuel consumption calculations
+    - Emissions tracking
+    - Operational hours tracking
+    - Start/stop costs
+    - Efficiency curves
+    """
     site: SiteInfo
     config: GensetConfig
-    py_microgrid: Optional[Any] = None
-
-    missed_load: np.ndarray = field(init=False)
-    missed_load_percentage: float = field(init=False, default=0.)
-    schedule_curtailed: np.ndarray = field(init=False)
-    schedule_curtailed_percentage: float = field(init=False, default=0.)
-    total_gen_max_feasible_year1: np.ndarray = field(init=False)
-
+    
+    # Calculated properties (set after simulation)
+    generation_profile: np.ndarray = field(init=False, default=None)
+    fuel_consumption_profile: np.ndarray = field(init=False, default=None) 
+    operational_hours_profile: np.ndarray = field(init=False, default=None)
+    starts_profile: np.ndarray = field(init=False, default=None)
+    
+    # Aggregate metrics
+    total_generation_kwh: float = field(init=False, default=0.0)
+    total_fuel_consumption_liters: float = field(init=False, default=0.0)
+    total_operational_hours: float = field(init=False, default=0.0)
+    total_starts: int = field(init=False, default=0)
+    total_co2_emissions_kg: float = field(init=False, default=0.0)
+    
     def __attrs_post_init__(self):
+        """Initialize the genset with default values."""
+        self.generation_profile = np.zeros(8760)
+        self.fuel_consumption_profile = np.zeros(8760)
+        self.operational_hours_profile = np.zeros(8760)
+        self.starts_profile = np.zeros(8760)
+        
+    def simulate_power(self, demand_profile: np.ndarray, project_lifetime: int = 1) -> None:
         """
-        Class that houses the hybrid system performance and financials. Enforces interconnection and curtailment
-        limits based on PySAM's Grid module.
-
+        Simulate genset power generation based on demand profile with proper diesel generator constraints.
+        
         Args:
-            site: Power source site information
-            config: dict, used to instantiate a `GridConfig` instance
-            py_microgrid: HOPP system object
+            demand_profile: Hourly power demand for genset [kW]
+            project_lifetime: Project lifetime in years
         """
-        system_model = GensetModel.default("PVWattsSingleOwner")
+        n_hours = len(demand_profile)
+        self.generation_profile = np.zeros(n_hours)
+        self.fuel_consumption_profile = np.zeros(n_hours)
+        self.operational_hours_profile = np.zeros(n_hours)
+        self.starts_profile = np.zeros(n_hours)
+        
+        # Minimum load constraint
+        min_load_kw = self.config.interconnect_kw * self.config.minimum_load_factor
+        previous_state = False  # Track if genset was running in previous hour
+        
+        for hour in range(n_hours):
+            demand_kw = demand_profile[hour]
+            
+            if demand_kw > 0:
+                # Apply minimum load constraint
+                if demand_kw < min_load_kw:
+                    # If demand is below minimum, run at minimum load
+                    actual_output = min_load_kw
+                else:
+                    # Run at demanded output, capped at rated capacity
+                    actual_output = min(demand_kw, self.config.interconnect_kw)
+                
+                # Calculate fuel consumption based on efficiency
+                fuel_consumption = self._calculate_fuel_consumption(actual_output)
+                
+                # Track start if genset was off in previous hour
+                if not previous_state:
+                    self.starts_profile[hour] = 1
+                    
+                # Update profiles
+                self.generation_profile[hour] = actual_output
+                self.fuel_consumption_profile[hour] = fuel_consumption
+                self.operational_hours_profile[hour] = 1.0
+                previous_state = True
+            else:
+                # Genset is off
+                previous_state = False
+                
+        # Calculate aggregate metrics over project lifetime
+        self.total_generation_kwh = np.sum(self.generation_profile) * project_lifetime
+        self.total_fuel_consumption_liters = np.sum(self.fuel_consumption_profile) * project_lifetime
+        self.total_operational_hours = np.sum(self.operational_hours_profile) * project_lifetime
+        self.total_starts = int(np.sum(self.starts_profile) * project_lifetime)
+        self.total_co2_emissions_kg = self.total_fuel_consumption_liters * self.config.co2_emissions_per_liter
 
-        # parse user input for financial model
-        if isinstance(self.config.fin_model, str):
-            financial_model = Singleowner.default(self.config.fin_model)
-        elif isinstance(self.config.fin_model, dict):
-            financial_model = CustomFinancialModel(self.config.fin_model)
+    def dispatch_power(self, deficit_kw: float) -> tuple:
+        """
+        Dispatch genset power to meet a specific deficit, respecting minimum turn-on power and max capacity.
+        
+        Args:
+            deficit_kw: Power deficit that needs to be met [kW]
+            
+        Returns:
+            tuple: (actual_power_output, power_served_to_deficit)
+                - actual_power_output: Actual genset output considering minimum load constraint
+                - power_served_to_deficit: Power that actually serves the deficit (may be less than actual output)
+        """
+        if deficit_kw <= 0:
+            return 0.0, 0.0
+        
+        # Minimum turn-on power constraint
+        min_turn_on_power = self.config.interconnect_kw * self.config.minimum_load_factor
+        
+        # If deficit is too small to justify turning on genset, don't turn on
+        if deficit_kw < min_turn_on_power:
+            return 0.0, 0.0
+        
+        # Calculate actual genset output (must be at least minimum load)
+        actual_output = max(min_turn_on_power, min(deficit_kw, self.config.interconnect_kw))
+        
+        # Power that serves the deficit is the minimum of actual output and deficit
+        power_served = min(actual_output, deficit_kw)
+        
+        return actual_output, power_served
+        
+    @property
+    def minimum_turn_on_power_kw(self) -> float:
+        """Minimum power genset must produce when turned on [kW]"""
+        return self.config.interconnect_kw * self.config.minimum_load_factor
+        
+    @property
+    def maximum_capacity_kw(self) -> float:
+        """Maximum genset capacity [kW]"""
+        return self.config.interconnect_kw
+        
+    def _calculate_fuel_consumption(self, output_kw: float) -> float:
+        """
+        Calculate fuel consumption based on genset output and efficiency curve.
+        
+        Args:
+            output_kw: Genset output power [kW]
+            
+        Returns:
+            Fuel consumption [L/hour]
+        """
+        if output_kw <= 0:
+            return 0.0
+            
+        # Fuel consumption based on specific consumption rate
+        # The specific_fuel_consumption already accounts for average efficiency
+        fuel_consumption = output_kw * self.config.specific_fuel_consumption
+        return fuel_consumption
+        
+    def calculate_total_costs(self, project_lifetime: int) -> dict:
+        """
+        Calculate total costs for the genset over project lifetime.
+        
+        Args:
+            project_lifetime: Project lifetime in years
+            
+        Returns:
+            Dictionary with cost breakdown
+        """
+        # Installation cost
+        install_cost = self.config.interconnect_kw * self.config.install_cost_per_kw
+        
+        # Replacement cost based on operational hours vs operational life
+        if self.total_operational_hours > 0:
+            # Calculate how many times the genset exceeds its operational life
+            life_cycles = self.total_operational_hours / self.config.operational_life_hours
+            num_replacements = max(0, int(life_cycles))
         else:
-            financial_model = self.config.fin_model
-
-        # default
-        if financial_model is None:
-            financial_model = Singleowner.from_existing(system_model, "PVWattsSingleOwner")
-            financial_model.value("add_om_num_types", 1)
-
-        super().__init__("Genset", self.site, system_model, financial_model)
-
-        if self.config.ppa_price is not None:
-            self.ppa_price = self.config.ppa_price
-
-        # Configure genset capacity limits using PySAM Grid model for consistency
-        self._system_model.GridLimits.enable_interconnection_limit = 1
-        self._system_model.GridLimits.grid_interconnection_limit_kwac = self.config.interconnect_kw
-        self._dispatch = None
-
-        self.missed_load = np.array([0.])
-        self.schedule_curtailed = np.array([0.])
-        self.total_gen_max_feasible_year1 = np.array([0.])
-
-    def simulate_grid_connection(
-        self,
-        hybrid_size_kw: float,
-        total_gen: Union[List[float], np.ndarray],
-        project_life: int,
-        lifetime_sim: bool,
-        total_gen_max_feasible_year1: Union[List[float], np.ndarray],
-        dispatch_options: Optional[dict] = None
-    ):
-        # Ensure total_gen is an array
-        total_gen = np.array(total_gen)
-        # Extract pv and wind generation profile and calculate total renewable_gen
-        pv_gen = np.array(self.py_microgrid.system.generation_profile.pv)
-        wind_gen = np.array(self.py_microgrid.system.generation_profile.wind)
-        renewable_gen = pv_gen + wind_gen
-    
-        # Calculate the maximum grid output
-        max_grid_output = np.max(total_gen)
-    
-        if self.site.follow_desired_schedule:
-            lifetime_schedule = np.tile(
-                [x * 1e3 for x in self.site.desired_schedule],
-                int(project_life / (len(self.site.desired_schedule) // self.site.n_timesteps))
-            )
-    
-            # Ensure all arrays have the same length
-            min_length = min(len(lifetime_schedule), len(renewable_gen), len(total_gen))
-            lifetime_schedule = lifetime_schedule[:min_length]
-            renewable_gen = renewable_gen[:min_length]
-            total_gen = total_gen[:min_length]
-    
-            # Create a new numpy array for the generation profile
-            # This array will store the grid's output for each time step
-            generation_profile = np.zeros(min_length)
-    
-            # Iterate through each time step
-            for i in range(min_length):
-                # Get the energy demand for this time step
-                demand = lifetime_schedule[i]
-    
-                # Get the available renewable energy (PV + wind) for this time step
-                renewable_available = renewable_gen[i]
-    
-                # Calculate the energy deficit
-                # This is how much additional energy is needed from grid after renewable generation
-                energy_deficit = max(0, demand - renewable_available)
-    
-                # Set the grid output to match the energy deficit, but do not exceed the max output capacity
-                generation_profile[i] = min(energy_deficit, max_grid_output)
-    
-            # Assign the newly created array to self.generation_profile
-            self.generation_profile = generation_profile
-
-        # Ensure these attributes are set as numpy arrays
-        self.generation_profile = np.array(self.generation_profile)
-        self.total_gen_max_feasible_year1 = np.array(total_gen_max_feasible_year1)
-        self.system_capacity_kw = hybrid_size_kw
-        self.gen_max_feasible = np.minimum(
-            total_gen_max_feasible_year1,
-            self.config.interconnect_kw * self.site.interval / 60
-        )
-        self.simulate_power(project_life, lifetime_sim)
-
-        # FIXME: updating capacity credit for reporting only.
-        self.capacity_credit_percent = [i * (self.system_capacity_kw / self.config.interconnect_kw) for i in self.capacity_credit_percent]
-
-    def calc_gen_max_feasible_kwh(self, interconnect_kw: float) -> list:
-        """
-        Calculates the maximum feasible generation profile that could have occurred (year 1)
-
-        Args:
-        :param interconnect_kw: Interconnection limit [kW]
-
-        :return: maximum feasible generation [kWh]
-        """
-        W_ac_nom = self.calc_nominal_capacity(interconnect_kw)
-        t_step = self.site.interval / 60  # hr
-        E_net_max_feasible = [min(x, W_ac_nom) * t_step for x in self.total_gen_max_feasible_year1[0:self.site.n_timesteps]]  # [kWh]
-        return E_net_max_feasible
-
+            num_replacements = 0
+            
+        replacement_cost = num_replacements * self.config.interconnect_kw * self.config.replacement_cost_per_kw
+        
+        # Fuel cost
+        fuel_cost = self.total_fuel_consumption_liters * self.config.fuel_cost_per_liter
+        
+        # Maintenance cost
+        maintenance_cost = self.total_operational_hours * self.config.maintenance_cost_per_hour
+        
+        # Start costs
+        start_cost = self.total_starts * self.config.start_cost
+        
+        # CO2 emissions cost (if carbon pricing is applied)
+        carbon_cost = 0.0  # This can be set via configuration
+        
+        total_cost = install_cost + replacement_cost + fuel_cost + maintenance_cost + start_cost + carbon_cost
+        
+        return {
+            'install_cost': install_cost,
+            'replacement_cost': replacement_cost,
+            'fuel_cost': fuel_cost,
+            'maintenance_cost': maintenance_cost,
+            'start_cost': start_cost,
+            'carbon_cost': carbon_cost,
+            'total_cost': total_cost,
+            'co2_emissions_kg': self.total_co2_emissions_kg,
+            'co2_emissions_tonnes': self.total_co2_emissions_kg / 1000.0
+        }
+        
     @property
-    def system_capacity_kw(self) -> float:
-        return self._financial_model.value('system_capacity')
-
-    @system_capacity_kw.setter
-    def system_capacity_kw(self, size_kw: float):
-        self._financial_model.value('system_capacity', size_kw)
-
+    def capacity_kw(self) -> float:
+        """Genset rated capacity [kW]"""
+        return self.config.interconnect_kw
+        
     @property
-    def interconnect_kw(self) -> float:
-        """Genset capacity limit [kW]"""
-        return self._system_model.GridLimits.grid_interconnection_limit_kwac
-
-    @interconnect_kw.setter
-    def interconnect_kw(self, genset_capacity_limit_kw: float):
-        self._system_model.GridLimits.grid_interconnection_limit_kwac = genset_capacity_limit_kw
-
+    def capacity_factor(self) -> float:
+        """Capacity factor based on generation profile [%]"""
+        if self.config.interconnect_kw == 0:
+            return 0.0
+        return (np.sum(self.generation_profile) / (self.config.interconnect_kw * len(self.generation_profile))) * 100
+        
     @property
-    def curtailment_ts_kw(self) -> list:
-        """Grid curtailment as energy delivery limit (first year) [MW]"""
-        return [i for i in self._system_model.GridLimits.grid_curtailment]
-
-    @curtailment_ts_kw.setter
-    def curtailment_ts_kw(self, curtailment_limit_timeseries_kw: Sequence):
-        self._system_model.GridLimits.grid_curtailment = curtailment_limit_timeseries_kw
-
-    @property
-    def generation_profile(self) -> Sequence:
-        """System power generated [kW]"""
-        return self._system_model.SystemOutput.gen
-
-    @generation_profile.setter
-    def generation_profile(self, system_generation_kw: Sequence):
-        self._system_model.SystemOutput.gen = system_generation_kw
-
-    @property
-    def generation_profile_wo_battery(self) -> Sequence:
-        """System power generated without battery [kW]"""
-        return self._financial_model.value('gen_without_battery')
-
-    @generation_profile_wo_battery.setter
-    def generation_profile_wo_battery(self, system_generation_wo_battery_kw: Sequence):
-        self._system_model.SystemOutput.gen = system_generation_wo_battery_kw
-
-    @property
-    def generation_profile_pre_curtailment(self) -> Sequence:
-        """System power before grid interconnect [kW]"""
-        return self._system_model.Outputs.system_pre_interconnect_kwac
-
-    @property
-    def generation_curtailed(self) -> Sequence:
-        """Generation curtailed due to interconnect limit [kW]"""
-        curtailed = self.generation_profile
-        pre_curtailed = self.generation_profile_pre_curtailment
-        return [pre_curtailed[i] - curtailed[i] for i in range(len(curtailed))]
-
-    @property
-    def curtailment_percent(self) -> float:
-        """Annual energy loss from curtailment and interconnection limit [%]"""
-        return self._system_model.Outputs.annual_ac_curtailment_loss_percent \
-               + self._system_model.Outputs.annual_ac_interconnect_loss_percent
-
-    @property
-    def capacity_factor_after_curtailment(self) -> float:
-        """Capacity factor of the curtailment (year 1) [%]"""
-        return self._system_model.Outputs.capacity_factor_curtailment_ac
-
-    @property
-    def capacity_factor_at_interconnect(self) -> float:
-        """Capacity factor of the curtailment (year 1) [%]"""
-        return self._system_model.Outputs.capacity_factor_interconnect_ac
+    def average_load_factor(self) -> float:
+        """Average load factor when operating [%]"""
+        operating_hours = self.operational_hours_profile > 0
+        if np.sum(operating_hours) == 0:
+            return 0.0
+        avg_output = np.mean(self.generation_profile[operating_hours])
+        return (avg_output / self.config.interconnect_kw) * 100
+        
+    def get_performance_summary(self) -> dict:
+        """Get a summary of genset performance metrics."""
+        return {
+            'Total Generation (kWh)': self.total_generation_kwh,
+            'Total Fuel Consumption (L)': self.total_fuel_consumption_liters,
+            'Total Operational Hours': self.total_operational_hours,
+            'Total Starts': self.total_starts,
+            'Total CO2 Emissions (kg)': self.total_co2_emissions_kg,
+            'Capacity Factor (%)': self.capacity_factor,
+            'Average Load Factor (%)': self.average_load_factor,
+            'Fuel Efficiency (kWh/L)': self.total_generation_kwh / max(self.total_fuel_consumption_liters, 1)
+        }

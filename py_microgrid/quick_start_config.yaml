@@ -4,21 +4,12 @@ site:
     lat: -33.5265
     lon: 149.1588
     year: 2021
-    site_boundaries:
-      verts:
-      - - 0.0
-        - 0.0
-      - - 1000.0
-        - 0.0
-      - - 1000.0
-        - 1000.0
-      - - 0.0
-        - 1000.0
-    urdb_label: 5ca4d1175457a39b23b3d45e
-  desired_schedule: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/examples/parallel_simulations/load_data/Load
-    data.csv
+  desired_schedule: ./examples/parallel_simulations/load_data/Load data.csv
   solar_resource_file: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/simulation/resource_files/solar/-33.5265_149.1588_psmv3_60_2020.csv
   wind_resource_file: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/simulation/resource_files/wind/-33.5265_149.1588_NASA_2020_60min_50m.srw
+financial:
+  project_lifetime: 25
+  discount_rate: 5.88
 technologies:
   pv:
     system_capacity_kw: 29310.0
@@ -39,14 +30,10 @@ technologies:
     enabled: false
     interconnect_kw: 10000
     config_file: ./py_microgrid/simulation/config/grid_config.yaml
-  financial:
-    Singleowner:
-      analysis_period: 25
-      real_discount_rate: 5.88
 config:
   dispatch_config_file: ./py_microgrid/simulation/config/dispatch_config.yaml
   dispatch_options:
-    battery_dispatch: heuristic_load_following
+    battery_dispatch: predictive_demand_response
     grid_charging: false
     include_lifecycle_count: false
     n_look_ahead_periods: 48

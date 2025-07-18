@@ -1,5 +1,5 @@
 """
-Load analysis and flexible load management utilities for HOPP.
+Load analysis and flexible load management utilities for py_microgrid.
 """
 
 import pandas as pd
@@ -43,10 +43,26 @@ class LoadAnalyzer:
         
         adjusted_generation = total_generation_without_battery + battery
         
-        # Apply flexible load reduction only if enabled and needed
-        if self.enable_flexible_load and adjusted_generation < original_load:
+        # IMPROVED: More realistic flexible load management for mining operations
+        if self.enable_flexible_load:
             max_reduction = self.max_load_reduction_percentage * original_load
-            load_reduction = min(original_load - adjusted_generation, max_reduction)
+            load_reduction = 0
+            
+            # Primary trigger: Direct deficit coverage
+            if adjusted_generation < original_load:
+                deficit = original_load - adjusted_generation
+                load_reduction = min(deficit, max_reduction)
+            
+            # Secondary trigger: Proactive load management during tight supply periods
+            elif adjusted_generation < original_load * 1.05:  # Less than 5% margin
+                # Mining operations can reasonably reduce 2-3% load proactively
+                # to avoid system stress (e.g., reduce crusher speed, defer non-critical loads)
+                proactive_reduction = min(
+                    original_load * 0.03,  # Max 3% proactive reduction
+                    max_reduction * 0.15   # Use 15% of available flexibility
+                )
+                load_reduction = proactive_reduction
+            
             adjusted_load = original_load - load_reduction
         else:
             adjusted_load = original_load

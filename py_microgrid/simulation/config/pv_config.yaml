@@ -18,8 +18,9 @@ pv:
     
   # Cost parameters (USD)
   costs:
-    installed_cost_per_kw: 2000.0  # $/kW - PV installed cost
-    om_cost_per_kw_per_year: 10.0  # $/kW/year - PV O&M cost
+    installed_cost_per_kw: 2000.0  # $/kW - PV module cost, include BOS
+    om_cost_per_kw_per_year: 15.0  # $/kW/year - PV O&M cost (always used)
+    
     
   # Performance parameters
   performance:

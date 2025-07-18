@@ -3,6 +3,10 @@
 # that were previously hardcoded in the system
 
 grid:
+  # Cost parameters (USD)
+  costs:
+    connection_cost_per_kw: 50.0  # $/kW - Grid connection cost per kW capacity
+    
   # Pricing parameters
   pricing:
     base_import_price: 0.12  # $/kWh - Base import price
