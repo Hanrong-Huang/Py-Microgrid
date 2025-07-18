@@ -31,14 +31,14 @@ site:
         - 151.62
       - - 708.14
         - 0.0
-  desired_schedule: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\examples\parallel_simulations\load_data\Load data.csv  # absolute path
-  grid_resource_file: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\simulation\resource_files\grid\dispatch_factors_ts.csv  # absolute path
+  desired_schedule: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\examples\parallel_simulations\load_data\Load data.csv  # path to load data csv
+  grid_resource_file: D:\Anaconda\envs\microgrid\Lib\site-packages\py_microgrid\simulation\resource_files\grid\dispatch_factors_ts.csv  # path to grid dispatch csv
   hub_height: 50.0
   solar: true
-  solar_resource_file: d:\Anaconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/solar\-33.5265_149.1588_psmv3_60_2020.csv  # absolute path
+  solar_resource_file: d:\Anaconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/solar\-33.5265_149.1588_psmv3_60_2020.csv  # path to solar data
   wave: false
   wind: true
-  wind_resource_file: d:\Anaconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/wind\-33.5265_149.1588_NASA_2020_60min_50m.srw  # absolute path
+  wind_resource_file: d:\Anaconda\envs\microgrid\lib\site-packages\py_microgrid\simulation/resource_files/wind\-33.5265_149.1588_NASA_2020_60min_50m.srw  # path to wind data
 technologies:
   battery:
     chemistry: LFPGraphite
