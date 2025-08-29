@@ -280,4 +280,5 @@ For questions, issues, or contributions, please visit the [GitHub repository](ht
 
 - NREL for providing renewable energy resource data APIs and HOPP framework
 - The industrial microgrid community for real-world operational insights  
-- Contributors to hybrid energy system modeling and economic dispatch optimization
+  
+
