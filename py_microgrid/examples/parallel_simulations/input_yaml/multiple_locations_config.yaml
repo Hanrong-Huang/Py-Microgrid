@@ -25,8 +25,8 @@ site:
       - - 708.14
         - 0.0
   desired_schedule: ../load_data/Load data.csv
-  solar_resource_file: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/simulation/resource_files/solar/-33.5265_149.1588_psmv3_60_2022.csv
-  wind_resource_file: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/simulation/resource_files/wind/-33.5265_149.1588_NASA_2022_60min_50m.srw
+  solar_resource_file: ../../../../simulation/resource_files/solar/-33.5265_149.1588_psmv3_60_2022.csv
+  wind_resource_file: ../../../../simulation/resource_files/wind/-33.5265_149.1588_NASA_2022_60min_50m.srw
   hub_height: 50.0
   solar: true
   wind: true

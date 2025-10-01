@@ -5,8 +5,8 @@ site:
     lon: 149.1588
     year: 2021
   desired_schedule: ./examples/parallel_simulations/load_data/Load data.csv
-  solar_resource_file: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/simulation/resource_files/solar/-33.5265_149.1588_psmv3_60_2020.csv
-  wind_resource_file: /mnt/c/Users/Hanrong Huang/OneDrive - UNSW/Desktop/py_microgrid/py_microgrid/simulation/resource_files/wind/-33.5265_149.1588_NASA_2020_60min_50m.srw
+  solar_resource_file: ./simulation/resource_files/solar/-33.5265_149.1588_psmv3_60_2020.csv
+  wind_resource_file: ./simulation/resource_files/wind/-33.5265_149.1588_NASA_2020_60min_50m.srw
 financial:
   project_lifetime: 25
   discount_rate: 5.88
