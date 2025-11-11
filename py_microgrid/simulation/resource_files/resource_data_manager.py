@@ -69,7 +69,7 @@ class ResourceDataManager:
             "end": f"{year}1231",
             "latitude": latitude,
             "longitude": longitude,
-            "community": "RE",
+            "community": "SB",
             "parameters": "ALLSKY_SFC_SW_DNI,ALLSKY_SFC_SW_DIFF,ALLSKY_SFC_SW_DWN,T2M,WS50M",
             "format": "CSV",
             "header": "true",
