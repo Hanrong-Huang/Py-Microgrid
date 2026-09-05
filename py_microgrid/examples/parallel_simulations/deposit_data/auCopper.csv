@@ -1,0 +1,136 @@
+FID,SAMPLE_GEOMETRY,DEPOSIT_LATITUDE,DEPOSIT_LONGITUDE,DEPOSIT_UID,ALL_COMMODITIES,CU_PPM
+CriticalMineralDepositsGeochemistry.ga.38.7372102.wholerock,POINT (-33.526935 149.158321),-33.5265,149.1588,AUS.NSW.333484,"Cu, Au",
+CriticalMineralDepositsGeochemistry.ga.439.7372712.ar,POINT (-31.159876 145.655792),-31.1629,145.6538,AUS.NSW.333485,"Cu, Ag, Zn, Au, Pb",
+CriticalMineralDepositsGeochemistry.AUS.NSW.334161.59,POINT (-31.52961 145.84865),-31.5001,145.8422,AUS.NSW.334161,"Cu, Au (Ag)",
+CriticalMineralDepositsGeochemistry.AUS.NSW.334374.1272,POINT (-31.5161 145.8551),-31.5161,145.8551,AUS.NSW.334374,"Au, Cu",
+CriticalMineralDepositsGeochemistry.ga.438.7372618.4acid,POINT (-31.52 145.85),-31.5212,145.8578,AUS.NSW.334832,"Pb, Au, Cu, Zn, Ag",11000
+CriticalMineralDepositsGeochemistry.ga.2908.2130711.wholerock,POINT (-31.25979 146.86966),-31.2586,146.8719,AUS.NSW.334834,"Cu (Au, Ag, Co)",1526.473
+CriticalMineralDepositsGeochemistry.ga.1667.1463363.wholerock,POINT (-35.59078 149.446056),-35.5901,149.4372,AUS.NSW.335061,"Zn, Cu, Pb",7
+CriticalMineralDepositsGeochemistry.ga.435.7372636.ar,POINT (-31.39167 146.71611),-31.3956,146.7216,AUS.NSW.335156,"Cu (Au, Ag, Co)",
+CriticalMineralDepositsGeochemistry.ga.440.7372721.wholerock,POINT (-32.924901 148.04952),-32.9135,148.0498,AUS.NSW.335362,"Cu, Au",
+CriticalMineralDepositsGeochemistry.ga.33.7372094.ar,POINT (-31.969951 141.461053),-31.9665,141.465,AUS.NSW.335554,"Zn, Pb (Ag, Cu, Au)",
+CriticalMineralDepositsGeochemistry.AUS.NSW.335658.84,POINT (-32.06528 146.30694),-32.0637,146.3085,AUS.NSW.335658,"Cu, Zn, Pb (Ag)",
+CriticalMineralDepositsGeochemistry.ga.11.7372020.wholerock,POINT (-33.458026 148.996387),-33.4574,148.9957,AUS.NSW.335835,"Ag (Au, Cu)",
+CriticalMineralDepositsGeochemistry.ga.3.7371777.wholerock,POINT (-35.062882 149.570489),-35.0613,149.5717,AUS.NSW.335841,"Zn, Cu, Pb (Ag, Au)",
+CriticalMineralDepositsGeochemistry.AUS.NSW.335959.385,POINT (-29.5 152.48972),-29.5,152.4897,AUS.NSW.335959,"Cu, Au (Ag, Zn, Pb, Co)",76500
+CriticalMineralDepositsGeochemistry.ga.2282.1645046.wholerock,POINT (-34.185762 147.384237),-34.1848,147.3854,AUS.NSW.455899,"Au, Mo, Cu",5913
+CriticalMineralDepositsGeochemistry.ga.1563.2130653.wholerock,POINT (-32.219074 147.450214),-32.2205,147.448,AUS.NSW.467218,"Cu, Au",1408
+CriticalMineralDepositsGeochemistry.ga.3883.1596030.wholerock,POINT (-29.352446 151.546494),-29.3469,151.5477,AUS.NSW.467228,"Ag, Zn, Cu (Pb)",49
+CriticalMineralDepositsGeochemistry.ga.1545.1928331.wholerock,POINT (-31.529402 146.684075),-31.5303,146.6862,AUS.NSW.529220,"Cu (Au, Ag)",5282
+CriticalMineralDepositsGeochemistry.ga.1499.1508079.wholerock,POINT (-17.17696 137.768692),-17.1813,137.7848,AUS.NT.333325,Cu,1220
+CriticalMineralDepositsGeochemistry.ga.3687.1457998.wholerock,POINT (-19.612171 134.153728),-19.6271,134.15,AUS.NT.333391,"Cu, Ag, Au",32
+CriticalMineralDepositsGeochemistry.ga.49.7372070.wholerock,POINT (-16.433 136.1),-16.436,136.0985,AUS.NT.333587,"Zn, Pb (Ag, Cu, Cd, Sb)",
+CriticalMineralDepositsGeochemistry.ga.1269.1530828.wholerock,POINT (-17.168857 137.747059),-17.1727,137.752,AUS.NT.333631,Cu,8550
+CriticalMineralDepositsGeochemistry.ga.3847.1458131.wholerock,POINT (-19.440059 133.82293),-19.4448,133.8237,AUS.NT.333784,"Au, Cu, Bi, FeOre (Fe)",2980
+CriticalMineralDepositsGeochemistry.ga.3144.1458428.wholerock,POINT (-19.66439 134.282338),-19.6751,134.2835,AUS.NT.334073,"Au, Cu, Bi, Co",14
+CriticalMineralDepositsGeochemistry.ga.2187.1458126.wholerock,POINT (-19.699556 134.240928),-19.7033,134.2407,AUS.NT.334173,"Au, Bi, Cu",1120
+CriticalMineralDepositsGeochemistry.ga.1877.1458190.wholerock,POINT (-19.425658 134.065428),-19.4354,134.0661,AUS.NT.334279,"Cu (Au, Bi)",31
+CriticalMineralDepositsGeochemistry.ga.2968.1457921.wholerock,POINT (-19.69745 134.298168),-19.7115,134.2901,AUS.NT.334637,"Au, Bi, Ag, Cu",42
+CriticalMineralDepositsGeochemistry.ga.3467.1635978.wholerock,POINT (-22.650622 136.268135),-22.6513,136.268,AUS.NT.334762,"Cu, Ag (Au, Pb, Zn)",743
+CriticalMineralDepositsGeochemistry.ga.2831.1455877.wholerock,POINT (-13.502587 131.712403),-13.4996,131.713,AUS.NT.334824,"Sn, Cu",
+CriticalMineralDepositsGeochemistry.ga.3082.1459300.wholerock,POINT (-19.440252 134.037258),-19.4387,134.0281,AUS.NT.334931,"Cu, Au (Bi)",3
+CriticalMineralDepositsGeochemistry.ga.3901.1459402.wholerock,POINT (-19.469252 133.934009),-19.486,133.9023,AUS.NT.335010,"Au, Se, Bi, Cu",7
+CriticalMineralDepositsGeochemistry.ga.51.7372193.wholerock,POINT (-12.97745 131.112683),-12.9681,131.1124,AUS.NT.335011,"Pb, Cu, Sb, Ag, Cd, Zn",
+CriticalMineralDepositsGeochemistry.ga.2172.1453363.wholerock,POINT (-19.558157 134.063729),-19.5535,134.0588,AUS.NT.335952,"Au, Bi, Cu",1855
+CriticalMineralDepositsGeochemistry.ga.453.7372977.wholerock,POINT (-12.990879 131.002687),-12.9939,130.9975,AUS.NT.336105,"Pb, Co, Ag, Ni, Zn, Cu",
+CriticalMineralDepositsGeochemistry.ga.1237.1458090.wholerock,POINT (-19.65792 134.209668),-19.6671,134.22,AUS.NT.336129,"Au, Bi, Cu",240
+CriticalMineralDepositsGeochemistry.ga.1326.1636161.wholerock,POINT (-22.68584 136.239199),-22.6868,136.2415,AUS.NT.336208,"Cu (Au, Ag, Zn, Pb)",15551
+CriticalMineralDepositsGeochemistry.ga.2990.1458402.wholerock,POINT (-19.71273 134.281228),-19.7162,134.2817,AUS.NT.463918,"Ag, Bi, Au, Cu",25
+CriticalMineralDepositsGeochemistry.ga.2055.1565883.wholerock,POINT (-21.513922 134.152795),-21.5127,134.1564,AUS.NT.597284,"Cu, Zn (Pb, Ag, Co, Au)",48
+CriticalMineralDepositsGeochemistry.ga.59.7372147.4acid,POINT (-20.724184 139.475383),-20.7434,139.4783,AUS.QLD.333400,Cu,2030
+CriticalMineralDepositsGeochemistry.ga.457.7372630.4acid,POINT (-23.63 150.37),-23.6356,150.375,AUS.QLD.333486,"Au, Cu (Ag, Bi)",640
+CriticalMineralDepositsGeochemistry.ga.2787.2678817.wholerock,POINT (-21.539152 140.49689),-21.54,140.5017,AUS.QLD.333596,"Cu, Au (U)",2000
+CriticalMineralDepositsGeochemistry.ga.60.7372128.wholerock,POINT (-20.571158 139.472636),-20.5711,139.472,AUS.QLD.333688,"Zn, Pb (Ag, Cu)",
+CriticalMineralDepositsGeochemistry.ga.505.7373010.wholerock,POINT (-19.699174 139.357867),-19.6961,139.366,AUS.QLD.333779,Cu,
+CriticalMineralDepositsGeochemistry.ga.473.7373013.wholerock,POINT (-22.0933 140.58),-22.0939,140.5736,AUS.QLD.333785,"Cu, Au",
+CriticalMineralDepositsGeochemistry.ga.57.7372072.wholerock,POINT (-20.716379 139.475553),-20.7216,139.4782,AUS.QLD.333873,"Zn, Pb, Ag (Cu)",
+CriticalMineralDepositsGeochemistry.ga.514.7372537.wholerock,POINT (-18.505226 144.096768),-18.5074,144.0999,AUS.QLD.334081,"Cu (Au, Ag)",
+CriticalMineralDepositsGeochemistry.ga.3560.1504797.wholerock,POINT (-20.871548 139.969483),-20.8766,139.9862,AUS.QLD.334094,Cu,89
+CriticalMineralDepositsGeochemistry.ga.513.7372544.4acid,POINT (-17.118643 144.404724),-17.1187,144.4047,AUS.QLD.334276,"Au, Cu (Ag, Zn, Pb)",50400
+CriticalMineralDepositsGeochemistry.ga.2691.2804792.wholerock,POINT (-20.773705 140.046083),-20.7759,140.0445,AUS.QLD.334400,Cu (Au),24.2
+CriticalMineralDepositsGeochemistry.AUS.QLD.334462.482,POINT (-20.72694 139.47694),-20.7216,139.4782,AUS.QLD.334462,"Cu (Au, Co)",50000.111
+CriticalMineralDepositsGeochemistry.ga.3085.2804767.wholerock,POINT (-21.041936 139.899721),-21.0446,139.9062,AUS.QLD.334660,"Cu, Co",3.5
+CriticalMineralDepositsGeochemistry.ga.3848.1450927.wholerock,POINT (-20.168083 139.459591),-20.1656,139.4582,AUS.QLD.334842,"U, U3O8, Cu",15
+CriticalMineralDepositsGeochemistry.ga.1618.1451973.wholerock,POINT (-18.609241 143.99454),-18.609,143.993,AUS.QLD.334950,"Zn, Pb, Ag (Cu)",24
+CriticalMineralDepositsGeochemistry.ga.496.7372800.wholerock,POINT (-20.71864 140.648456),-20.7187,140.6487,AUS.QLD.334977,Au (Cu),
+CriticalMineralDepositsGeochemistry.ga.475.7372990.wholerock,POINT (-20.444747 140.705845),-20.4447,140.7058,AUS.QLD.334994,"Cu, Au (Mag, Fe, FeOre)",
+CriticalMineralDepositsGeochemistry.ga.462.7372735.wholerock,POINT (-20.247132 140.169095),-20.2545,140.1558,AUS.QLD.335006,"Zn, Pb (Cu, Ag, Au)",
+CriticalMineralDepositsGeochemistry.ga.3904.1680701.wholerock,POINT (-20.553626 139.970567),-20.5636,139.9752,AUS.QLD.335227,Cu,-1
+CriticalMineralDepositsGeochemistry.AUS.QLD.335458.1118,POINT (-21.67999 140.48216),-21.6784,140.4744,AUS.QLD.335458,"Au, Cu",17
+CriticalMineralDepositsGeochemistry.ga.472.7373009.ar,POINT (-20.62532 140.688482),-20.625,140.6885,AUS.QLD.335574,"Cu, Au (U, Co, Ag)",
+CriticalMineralDepositsGeochemistry.ga.557.7372673.wholerock,POINT (-30.952687 121.181542),-20.7406,139.9112,AUS.QLD.335769,"Cu, Au",
+CriticalMineralDepositsGeochemistry.ga.489.7372806.4acid,POINT (-21.548812 140.497295),-21.545,140.497,AUS.QLD.335859,"Cu, Au (U)",5890
+CriticalMineralDepositsGeochemistry.ga.1037.7368468.wholerock,POINT (-19.47848 139.389079),-19.474,139.3889,AUS.QLD.335937,"Cu, Co (Ag)",
+CriticalMineralDepositsGeochemistry.ga.2033.1925901.wholerock,POINT (-21.28114 140.520882),-21.2785,140.5052,AUS.QLD.335949,"Au, Cu",3
+CriticalMineralDepositsGeochemistry.ga.470.7372711.4acid,POINT (-20.954714 140.980663),-20.9549,140.9799,AUS.QLD.336037,"Cu, Ag, Au",256000
+CriticalMineralDepositsGeochemistry.ga.1358.1449680.wholerock,POINT (-19.163247 139.434934),-19.1596,139.4342,AUS.QLD.336263,Cu,18000
+CriticalMineralDepositsGeochemistry.ga.493.7372803.wholerock,POINT (-20.67222 140.363067),-24.017,148.917,AUS.QLD.443072,"Cu, Cbl, Au",
+CriticalMineralDepositsGeochemistry.ga.3558.1953854.wholerock,POINT (-20.301069 140.143695),-20.3054,140.1508,AUS.QLD.455378,Cu (Au),7.7
+CriticalMineralDepositsGeochemistry.ga.488.7372799.wholerock,POINT (-22.093613 140.561794),-22.0815,140.5842,AUS.QLD.558218,"Cu, Au",
+CriticalMineralDepositsGeochemistry.ga.526.7372582.wholerock,POINT (-35.09327 138.998954),-35.0919,139.0054,AUS.SA.333599,"Cu (Au, Ag)",
+CriticalMineralDepositsGeochemistry.ga.3197.1680361.wholerock,POINT (-29.720916 135.575906),-29.72,135.5749,AUS.SA.333675,"Cu, Au (Ag)",206
+CriticalMineralDepositsGeochemistry.ga.1829.2123606.wholerock,POINT (-31.110443 137.149374),-31.1051,137.1544,AUS.SA.335512,"Fe, U, Au, Co, Ag, Cu",380
+CriticalMineralDepositsGeochemistry.ga.516.7372740.4acid,POINT (-30.437444 136.889293),-30.4374,136.8893,AUS.SA.335647,"Cu, Au (U, Ag, REE)",53700
+CriticalMineralDepositsGeochemistry.ga.523.7373003.ar,POINT (-33.976954 137.688348),-33.9763,137.689,AUS.SA.336892,"Au, Cu",
+CriticalMineralDepositsGeochemistry.ga.528.7373031.wholerock,POINT (-34.056043 137.613837),-34.0407,137.6207,AUS.SA.337525,"Au, Cu",
+CriticalMineralDepositsGeochemistry.ga.2049.2128796.wholerock,POINT (-34.543702 137.874386),-34.5375,137.8722,AUS.SA.529299,"Cu, Au (Fe)",34
+CriticalMineralDepositsGeochemistry.ga.83.7372166.wholerock,POINT (-41.600136 145.700463),-41.603,145.6999,AUS.TAS.333591,"Zn, Cu, Pb, Ag (Au)",
+CriticalMineralDepositsGeochemistry.ga.533.7372640.4acid,POINT (-41.475101 145.380769),-41.477,145.385,AUS.TAS.333707,"Sn, Cu (WO3, Mo, Bi, W)",31900
+CriticalMineralDepositsGeochemistry.ga.85.7372172.wholerock,POINT (-41.774024 145.54155),-41.7723,145.5431,AUS.TAS.333876,"Zn, Pb, Ag, Au (Cu, Bi, Cd, Sb)",
+CriticalMineralDepositsGeochemistry.ga.64.7371778.ar,POINT (-41.841336 145.515162),-41.8501,145.5144,AUS.TAS.333976,"Zn, Au, Cu, Ag, Pb",
+CriticalMineralDepositsGeochemistry.ga.82.7372126.ar,POINT (-41.578242 145.718653),-41.5746,145.7221,AUS.TAS.334055,"Au, Zn, Pb (Ag, Cu, Bi, Sb)",
+CriticalMineralDepositsGeochemistry.ga.1201.1453734.wholerock,POINT (-41.21776 147.9927),-41.2245,148.0131,AUS.TAS.334077,"Sn, W, Cu",-2
+CriticalMineralDepositsGeochemistry.ga.539.7372887.wholerock,POINT (-41.203999 146.793565),-41.2021,146.8156,AUS.TAS.334630,"Au (Ag, Cu)",
+CriticalMineralDepositsGeochemistry.ga.536.7372593.wholerock,POINT (-41.431471 145.523547),-41.4269,145.5264,AUS.TAS.335457,"Sn, Cu",
+CriticalMineralDepositsGeochemistry.ga.88.7372149.wholerock,POINT (-42.063521 145.584146),-42.061,145.5855,AUS.TAS.335962,"Cu (Ag, Au)",
+CriticalMineralDepositsGeochemistry.ga.1043.7368474.ar,POINT (-41.79617 145.442364),-41.7824,145.434,AUS.TAS.336113,Sn (Cu),
+CriticalMineralDepositsGeochemistry.ga.3775.2169898.wholerock,POINT (-37.606039 142.607153),-37.6078,142.6124,AUS.VIC.467811,Cu,1015
+CriticalMineralDepositsGeochemistry.ga.2830.1457488.wholerock,POINT (-20.921859 116.886071),-20.9168,116.8861,AUS.WA.333298,"Ni, Cu, PGE, Pd, Pt, Co, Ir",2515
+CriticalMineralDepositsGeochemistry.ga.568.7372527.wholerock,POINT (-21.225493 116.799451),-21.117,116.8296,AUS.WA.333387,"PGE, Cu, Ni, Au, Pd, Pt, Rh (Cr)",
+CriticalMineralDepositsGeochemistry.ga.594.7372724.wholerock,POINT (-20.75588 117.705839),-20.7571,117.7045,AUS.WA.333525,"Cu, Zn, Pb (Ag, Au)",
+CriticalMineralDepositsGeochemistry.ga.3557.1497472.wholerock,POINT (-17.351322 128.005844),-17.3472,128.0235,AUS.WA.333595,"Ni, Cu, Co, PGE",332
+CriticalMineralDepositsGeochemistry.ga.2554.1541620.wholerock,POINT (-20.877105 117.816311),-20.8771,117.8091,AUS.WA.333611,"Cu, Zn (Ag, Pb, Au)",74
+CriticalMineralDepositsGeochemistry.ga.542.7372610.wholerock,POINT (-27.603836 120.590231),-27.599,120.5777,AUS.WA.333803,"Ni (Cu, Pd, Pt, Au, Co, PGE)",
+CriticalMineralDepositsGeochemistry.ga.97.7371782.wholerock,POINT (-28.777512 116.963014),-28.7772,116.9626,AUS.WA.333890,"Cu, Zn, Pb, Ag, Au",
+CriticalMineralDepositsGeochemistry.ga.570.7372530.wholerock,POINT (-28.483935 122.237988),-28.4868,122.2385,AUS.WA.334147,"Cu (Ni, Co, PGE, Au)",
+CriticalMineralDepositsGeochemistry.ga.119.7372025.wholerock,POINT (-28.40932 121.147994),-28.409,121.1478,AUS.WA.334181,"Cu, Zn, Ag (Au, Pb)",
+CriticalMineralDepositsGeochemistry.ga.182.7372048.wholerock,POINT (-30.910705 121.717647),-30.9106,121.7167,AUS.WA.334445,"Ni (Co, PGE, Cu)",
+CriticalMineralDepositsGeochemistry.ga.543.7372611.ar,POINT (-31.177891 121.678025),-31.1785,121.6775,AUS.WA.334537,"Ni (Cu, Co, PGE)",
+CriticalMineralDepositsGeochemistry.ga.3603.1596425.wholerock,POINT (-21.151275 119.20637),-21.147,119.2055,AUS.WA.334568,"Cu, Zn (Ag, Pb, Au)",104
+CriticalMineralDepositsGeochemistry.ga.1047.7368481.4acid,POINT (-24.643101 118.586078),-24.6431,118.5873,AUS.WA.334629,"Pb (Ag, Cu, Zn, Brt, Au)",2170
+CriticalMineralDepositsGeochemistry.ga.1028.7368460.wholerock,POINT (-30.389722 121.637717),-30.3934,121.652,AUS.WA.334649,"Ni (PGE, Cu, Co)",
+CriticalMineralDepositsGeochemistry.ga.1562.1484095.wholerock,POINT (-20.820601 117.076205),-20.8108,117.0665,AUS.WA.334705,"Cu, Au, Ag, Co",10740
+CriticalMineralDepositsGeochemistry.ga.567.7372529.4acid,POINT (-31.190946 121.677661),-31.1389,121.6784,AUS.WA.334902,"Ni, Co, PGE, Cu",5
+CriticalMineralDepositsGeochemistry.ga.672.7372481.4acid,POINT (-31.165287 121.084428),-31.1637,121.0857,AUS.WA.335026,"Ni, Co, PGE, Cu",1820
+CriticalMineralDepositsGeochemistry.ga.112.7371921.4acid,POINT (-23.432301 117.900151),-23.432,117.9,AUS.WA.335066,"Au, Cu",6480
+CriticalMineralDepositsGeochemistry.ga.585.7373035.wholerock,POINT (-32.747333 116.349488),-32.7509,116.3581,AUS.WA.335111,"Au, Cu",
+CriticalMineralDepositsGeochemistry.ga.3523.1588630.wholerock,POINT (-20.868339 116.867239),-20.8684,116.8655,AUS.WA.335166,"Ni, Cu, Co, Pd",5
+CriticalMineralDepositsGeochemistry.ga.1008.7368439.wholerock,POINT (-21.203498 119.2411),-21.2035,119.2383,AUS.WA.335341,"Zn, Cu (Pb, Ag, Au)",
+CriticalMineralDepositsGeochemistry.ga.1023.7368454.4acid,POINT (-27.242497 120.531739),-27.3105,120.5528,AUS.WA.335342,"Ni, Co, Cu (PGE)",2090
+CriticalMineralDepositsGeochemistry.ga.1673.1518247.wholerock,POINT (-17.2918 128.187184),-17.295,128.1877,AUS.WA.335365,"Ni, Co, Cu",8240
+CriticalMineralDepositsGeochemistry.ga.118.7371937.wholerock,POINT (-20.985698 116.866752),-20.9825,116.8648,AUS.WA.335472,"Ni, Cu, Co",
+CriticalMineralDepositsGeochemistry.ga.1029.7368459.4acid,POINT (-27.434911 120.600331),-27.4555,120.5775,AUS.WA.335559,"Ni (Cu, PGE, Co)",160
+CriticalMineralDepositsGeochemistry.ga.577.7372944.wholerock,POINT (-21.658644 121.571241),-21.6549,121.5709,AUS.WA.335579,Cu,
+CriticalMineralDepositsGeochemistry.ga.673.7372906.4acid,POINT (-22.194441 122.3041),-22.1991,122.3141,AUS.WA.335631,"Cu, Co",27400
+CriticalMineralDepositsGeochemistry.ga.2815.1542116.wholerock,POINT (-29.180129 116.977074),-29.1785,116.9774,AUS.WA.335652,"Mo, Au, Cu, Ag (WO3, MoS2, W)",90
+CriticalMineralDepositsGeochemistry.ga.167.7371999.4acid,POINT (-31.21854 121.68021),-31.2166,121.68,AUS.WA.335722,"Au, Ni, Cu, Co, PGE",240
+CriticalMineralDepositsGeochemistry.ga.1030.7368461.wholerock,POINT (-27.038517 120.501203),-26.9204,120.379,AUS.WA.335749,"Ni (Co, PGE, Cu)",
+CriticalMineralDepositsGeochemistry.ga.98.7371786.4acid,POINT (-28.744459 116.945039),-28.7452,116.9436,AUS.WA.335838,"Pb, Cu, Zn, Au, Ag",1000
+CriticalMineralDepositsGeochemistry.ga.116.7372023.wholerock,POINT (-21.721615 122.209869),-21.7224,122.2109,AUS.WA.335840,"Au, Cu",
+CriticalMineralDepositsGeochemistry.ga.3139.1482955.wholerock,POINT (-17.756313 127.835746),-17.7501,127.8329,AUS.WA.335844,"Pt, Ni, Pd, Cr, Cu, PGE, Au",2
+CriticalMineralDepositsGeochemistry.ga.1869.1484419.wholerock,POINT (-26.917519 118.646945),-26.9179,118.6444,AUS.WA.336035,"Ni, Au, Cu, Co",160
+CriticalMineralDepositsGeochemistry.ga.640.7372576.wholerock,POINT (-28.668992 116.379441),-28.6691,116.3796,AUS.WA.336142,"Au, Cu, Ag",
+CriticalMineralDepositsGeochemistry.ga.1837.1480868.wholerock,POINT (-28.973162 121.780083),-28.9634,121.766,AUS.WA.336197,"Ag, Zn, Cu",
+CriticalMineralDepositsGeochemistry.ga.2813.1515081.wholerock,POINT (-27.244223 120.54446),-27.2296,120.5417,AUS.WA.336234,"Ni (Co, Cu)",19
+CriticalMineralDepositsGeochemistry.ga.614.7372959.4acid,POINT (-26.095534 127.69017),-26.0954,127.7274,AUS.WA.434546,"Ni, Cu (Co, Pt, Au, Pd, Ag, PGE)",52600
+CriticalMineralDepositsGeochemistry.ga.660.7372592.ar,POINT (-31.197947 121.691917),-31.1931,121.6785,AUS.WA.513745,"Cu, Ni, PGE, Co",
+CriticalMineralDepositsGeochemistry.ga.675.7372889.wholerock,POINT (-28.483949 121.169987),-28.4839,121.17,AUS.WA.515724,"Zn, Cu, Ag (Au, Pb)",
+CriticalMineralDepositsGeochemistry.ga.589.7372935.wholerock,POINT (-25.541144 119.326398),-25.5406,119.3281,AUS.WA.519582,"Cu, Au (Ag)",
+CriticalMineralDepositsGeochemistry.ga.2279.1924594.wholerock,POINT (-20.789465 122.197628),-20.7886,122.1966,AUS.WA.557598,"Bi, Cu, Au, Ag",1152.98
+CriticalMineralDepositsGeochemistry.ga.613.7372961.4acid,POINT (-31.819415 123.198141),-31.8199,123.1924,AUS.WA.561110,"Ni, Cu (Co, PGE)",8620
+CriticalMineralDepositsGeochemistry.ga.638.7372514.wholerock,POINT (-25.544326 119.348018),-25.5443,119.348,AUS.WA.568323,Cu (Au),
+CriticalMineralDepositsGeochemistry.ga.649.7372507.wholerock,POINT (-24.236988 115.953477),-24.237,115.9535,AUS.WA.652958,"Mo, Cu, W",
+CriticalMineralDepositsGeochemistry.ga.1024.7368455.ar,POINT (-27.519083 120.587975),-27.5191,120.588,AUS.WA.652960,"Ni, Cu, Co, PGE",
+CriticalMineralDepositsGeochemistry.ga.616.7372958.4acid,POINT (-31.177781 121.678328),-31.1778,121.6783,AUS.WA.652961,"Ni, PGE, Cu, Co",4120
+CriticalMineralDepositsGeochemistry.ga.1026.7368457.wholerock,POINT (-28.301986 120.491972),-28.302,120.492,AUS.WA.652962,"Ni, Cu, Co, PGE",
+CriticalMineralDepositsGeochemistry.ga.580.7372828.wholerock,POINT (-31.286421 122.837997),-31.2864,122.838,AUS.WA.652969,"Cu, Au",
