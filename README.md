@@ -113,7 +113,7 @@ optimizer = SystemOptimizer(
     yaml_file_path=yaml_file_path,
     economic_calculator=economic_calculator,
     enable_flexible_load=True,  # Set to False to disable flexible load
-    max_load_reduction_percentage=0.2  # 20% maximum load reduction
+    max_load_reduction_percentage=0.1  # 10% maximum load reduction
 )
 
 # Define optimization bounds
