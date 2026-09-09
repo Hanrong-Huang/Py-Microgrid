@@ -141,8 +141,12 @@ class SystemOptimizer:
         # Calculate metrics
         metrics = self.load_analyzer.calculate_performance_metrics(df, self.economic_calculator.project_lifetime)
         
-        # Calculate LCOE
+        # Calculate LCOE, and the penalty on unmet demand that favours
+        # configurations meeting the full load (Eq. 1 of the paper)
         lcoe = self.economic_calculator.calculate_lcoe(total_system_cost, metrics['Total Load Served (kWh)'])
+        penalty = 0.0
+        if metrics['Demand Not Served (kWh)'] > 0:
+            penalty = self.economic_calculator.calculate_penalty(metrics['Demand Met Percentage'])
 
         # Prepare results
         result = {
@@ -159,10 +163,11 @@ class SystemOptimizer:
             "Total CO2 emissions (tonne)": costs['genset']['co2_emissions']/1000,
             "System NPC ($)": self.economic_calculator.calculate_present_value(total_system_cost),
             "System LCOE ($/kWh)": lcoe,
+            "Penalized LCOE ($/kWh)": lcoe + penalty,
             **metrics
         }
 
-        return lcoe, result
+        return lcoe + penalty, result
 
     def _calculate_costs(self, hybrid_plant, config, genset_total_generation) -> Dict[str, Dict[str, float]]:
         """Calculate costs for all system components."""

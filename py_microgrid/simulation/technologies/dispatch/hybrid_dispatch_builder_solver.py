@@ -2,6 +2,7 @@ import sys, os
 from pathlib import Path
 import time
 
+import shutil
 import pyomo.environ as pyomo
 from pyomo.opt import TerminationCondition
 from pyomo.util.check_units import assert_units_consistent
@@ -15,6 +16,16 @@ from py_microgrid.simulation.technologies.dispatch import (
 from py_microgrid.simulation.technologies.clustering import Clustering
 from py_microgrid.utilities.log import hybrid_logger as logger
 
+
+
+def solver_executable(name):
+    """The solver on PATH, or the copy in this conda environment's own bin,
+    which is where conda-forge puts glpsol and cbc on Windows."""
+    exe = shutil.which(name)
+    if exe is None:
+        here = Path(sys.executable).parent / "Library" / "bin" / (name + ".exe")
+        exe = str(here) if here.exists() else name
+    return exe
 
 class HybridDispatchBuilderSolver:
     """Helper class for building hybrid system dispatch problem, solving dispatch problem, and simulating system
@@ -167,7 +178,7 @@ class HybridDispatchBuilderSolver:
         solver_options = SolverOptions(
             glpk_solver_options, log_name, user_solver_options, "log"
         )
-        with pyomo.SolverFactory("glpk", executable="/home/z5142067/miniconda3/envs/microgrid/bin/glpsol") as solver:
+        with pyomo.SolverFactory("glpk", executable=solver_executable("glpsol")) as solver:
             results = solver.solve(pyomo_model, options=solver_options.constructed)
         HybridDispatchBuilderSolver.log_and_solution_check(
             log_name,
@@ -276,7 +287,7 @@ class HybridDispatchBuilderSolver:
                 solver = pyomo.SolverFactory("cbc", executable=cbc_path, solver_io="nl")
                 results = solver.solve(pyomo_model, options=solver_options.constructed)
         elif sys.platform == "darwin" or sys.platform == "linux":
-            solver = pyomo.SolverFactory("cbc", executable= "/home/z5142067/miniconda3/envs/microgrid/bin/cbc")
+            solver = pyomo.SolverFactory("cbc", executable=solver_executable("cbc"))
             results = solver.solve(pyomo_model, options=solver_options.constructed)
         else:
             raise SystemError("Platform not supported ", sys.platform)
